@@ -13,18 +13,31 @@ subnet = ec2.Subnet(resource_name = 'new-subnet',
         availability_zone = _az,
         tags = {'Name': 'infra subnet', 'Creator': 'timc'})
 
-ig = ec2.InternetGateway(resource_name = 'new-ig',
+igw = ec2.InternetGateway(resource_name = 'new-igw',
         vpc_id = vpc.id,
         tags = {'Name': 'infra internet gateway', 'Creator': 'timc'})
 
-# FIXME this is not how you add a route in Pulumi. Workaround: adding the IG
-# manually at the AWS console allows me to reach the instance. Leaving this
-# here as a TODO.
+# Working thru this issue on the Pulumi Slack workspace. It's not documented
+# correctly yet. Here's the response I got on 2/26:
 #
-#rt = ec2.RouteTable('new-rt',
-#        vpc_id = vpc.id,
-#        routes = [ig.id],
-#        tags = {'Name': 'infra route table', 'Creator': 'timc'})
+# "Unfortunately this is a part where our Python docs aren’t sufficient -
+# `routes` has to be a list of dictionaries with a set of keys instead of a
+# string:
+#
+# https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes"
+#
+# TODO Is there a simpler way to pass the IGW to the route table, or is `rt` needed
+# here?
+#
+rt = ec2.RouteTable('new-rt',
+        vpc_id = vpc.id,
+        routes = [{'gateway_id': igw.id}],
+        tags = {'Name': 'infra route table', 'Creator': 'timc'})
+
+route = ec2.Route('default-route',
+        destination_cidr_block = '0.0.0.0/0',
+        gateway_id = igw.id,
+        route_table_id = rt.id)
 
 sg = ec2.SecurityGroup(resource_name = 'new-sg',
         description = 'HTTP and SSH ingress',
@@ -71,13 +84,15 @@ eip = ec2.Eip(resource_name='new-eip',
 
 # Export the DNS name of the bucket
 pulumi.export('vpcID', vpc.id)
-pulumi.export('internetGatewayID', ig.id)
 pulumi.export('subnetID', subnet.id)
+pulumi.export('internetGatewayID', igw.id)
+pulumi.export('routeTableID', rt.id)
+pulumi.export('routeID', route.id)
+pulumi.export('bucket_name',  bucket.bucket_domain_name)
 pulumi.export('securityGroupID', sg.id)
 pulumi.export('AMI', server.ami)
 pulumi.export('instanceID', server.id)
 pulumi.export('elasticIP', eip.public_ip)
 pulumi.export('publicIP', server.public_ip)
 pulumi.export('privateIP', server.private_ip)
-pulumi.export('bucket_name',  bucket.bucket_domain_name)
 
