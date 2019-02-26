@@ -17,6 +17,15 @@ ig = ec2.InternetGateway(resource_name = 'new-ig',
         vpc_id = vpc.id,
         tags = {'Name': 'infra internet gateway', 'Creator': 'timc'})
 
+# FIXME this is not how you add a route in Pulumi. Workaround: adding the IG
+# manually at the AWS console allows me to reach the instance. Leaving this
+# here as a TODO.
+#
+#rt = ec2.RouteTable('new-rt',
+#        vpc_id = vpc.id,
+#        routes = [ig.id],
+#        tags = {'Name': 'infra route table', 'Creator': 'timc'})
+
 sg = ec2.SecurityGroup(resource_name = 'new-sg',
         description = 'HTTP and SSH ingress',
         vpc_id = vpc.id,
@@ -45,7 +54,7 @@ server = ec2.Instance(
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = 't2.micro',     # TypeError if not present
         security_groups = [sg.id],
-        availability_zone = _az, 
+        availability_zone = _az,
         subnet_id = subnet.id,
         associate_public_ip_address = False,
 
