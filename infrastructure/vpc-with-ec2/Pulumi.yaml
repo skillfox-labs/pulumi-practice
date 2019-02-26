@@ -1,0 +1,3 @@
+name: vpc-with-ec2
+runtime: python
+description: A minimal AWS Python Pulumi program
