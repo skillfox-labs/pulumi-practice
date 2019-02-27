@@ -1,11 +1,18 @@
 import pulumi
+import random
+
 from pulumi_aws import ec2, s3
+
+# TODO functions and classes (encapsulation, ffs)
 
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
 #   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
+random.seed()
+availability_zones = ['us-west-2a', 'us-west-2b', 'us-west-2c'] # t2.micro not supported in us-west-2d
+_availability_zone = random.choice(availability_zones)
 
-_az = 'us-west-2b'  # t2.micro not supported in us-west-2
+_instance_type = 't2.micro'
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
@@ -18,11 +25,15 @@ igw = ec2.InternetGateway(resource_name = 'new-igw',
 subnet = ec2.Subnet(resource_name = 'new-subnet',
         vpc_id = vpc.id,
         cidr_block = '10.0.0.0/20',
-        availability_zone = _az,
+        availability_zone = _availability_zone,
         tags = {'Name': 'infra subnet', 'Creator': 'timc'})
 
 # https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes
 # FIXED! s/destination_cidr_block/cidr_block/g
+
+# the routeID has got the routeTableID embedded in it somehow
+#   routeID            r-rtb-0bc47b98495839d0d1080289494
+#   routeTableID       rtb-0bc47b98495839d0d
 
 rt = ec2.RouteTable('new-rt',
         vpc_id = vpc.id,
@@ -50,12 +61,18 @@ sg = ec2.SecurityGroup(resource_name = 'new-sg',
 bucket = s3.Bucket(resource_name = 'new-bucket',
         tags = {'Name': 'infra bucket', 'Creator': 'timc'})
 
+# TODO add key_name (aws_key_pair ?)
+# TODO add ebs_block_devices
+# TODO add volume_tags
+# TODO add iam_instance_profile
+# TODO add user_data
+
 server = ec2.Instance(
         resource_name = 'new-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
-        instance_type = 't2.micro',     # TypeError if not present
+        instance_type = _instance_type, # TypeError if not present
         security_groups = [sg.id],
-        availability_zone = _az,
+        availability_zone = _availability_zone,
         subnet_id = subnet.id,
         associate_public_ip_address = False,
 
