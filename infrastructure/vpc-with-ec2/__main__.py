@@ -40,10 +40,21 @@ rt = ec2.RouteTable('new-rt',
         routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
         tags = {'Name': 'infra route table', 'Creator': 'timc'})
 
+# AWS: source-based routing. To get closer to a specific destination CIDR,
+# forward traffic to corresponding target, e.g.,
+#
+# Destination   Target
+# 10.0.0.0/16   Local
+# 172.31.0.0/16 pcx-1a2b3c4d
+# 0.0.0.0/0     igw-11aa22bb
+
 route = ec2.Route('default-route',
         destination_cidr_block = '0.0.0.0/0',
         gateway_id = igw.id,
         route_table_id = rt.id)
+
+# AWS: I could (and maybe should) have used a MainRouteTableAssociation here.
+# As it is, I've got a main route table (comes with the VPC) sitting idle.
 
 rta = ec2.RouteTableAssociation('new-rta',
         route_table_id = rt.id,
