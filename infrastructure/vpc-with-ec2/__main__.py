@@ -1,11 +1,19 @@
 import pulumi
 from pulumi_aws import ec2, s3
 
+# TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
+#   edit: unsupported feature on the AWS side
+#   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
+
 _az='us-west-2b'  # t2.micro not supported in us-west-2
 
 vpc=ec2.Vpc(resource_name='new-vpc',
         cidr_block='10.0.0.0/16',
         tags={'Name': 'infra vpc', 'Creator': 'timc'})
+
+igw=ec2.InternetGateway(resource_name='new-igw',
+        vpc_id=vpc.id,
+        tags={'Name': 'infra internet gateway', 'Creator': 'timc'})
 
 subnet=ec2.Subnet(resource_name='new-subnet',
         vpc_id=vpc.id,
@@ -13,40 +21,7 @@ subnet=ec2.Subnet(resource_name='new-subnet',
         availability_zone=_az,
         tags={'Name': 'infra subnet', 'Creator': 'timc'})
 
-igw=ec2.InternetGateway(resource_name='new-igw',
-        vpc_id=vpc.id,
-        tags={'Name': 'infra internet gateway', 'Creator': 'timc'})
-
-# Working thru this issue on the Pulumi Slack workspace. It's not documented
-# correctly yet. Here's the response I got on 2/26:
-#
-# "Unfortunately this is a part where our Python docs aren’t sufficient -
-# `routes` has to be a list of dictionaries with a set of keys instead of a
-# string:
-#
-# https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes"
-#
-# TODO Is there a simpler way to pass the IGW to the route table, or is `rt` needed
-# here?
-
-# FIXME 1 before adding the missing parameter
-#
-# rt=ec2.RouteTable('new-rt', vpc_id=vpc.id, routes=[{'gateway_id': igw.id}])
-#
-# * creating urn:pulumi:dev::vpc-with-ec2::aws:ec2/routeTable:RouteTable::new-rt: MissingParameter: The request must contain the parameter destinationCidrBlock or destinationIpv6CidrBlock
-
-# FIXME 2 after adding the missing parameter (with snake_case)
-#
-# rt=ec2.RouteTable('new-rt', vpc_id=vpc.id, routes=[{'gateway_id': igw.id}], destination_cidr_block='0.0.0.0/0')
-#
-# TypeError: __init__() got an unexpected keyword argument 'destination_cidr_block'
-
-# FIXME 3 after getting a reply on Slack
-#
-# rt=ec2.RouteTable('new-rt', vpc_id=vpc.id, routes=[{'gateway_id': igw.id, 'destination_cidr_block': '0.0.0.0/0'}])
-#
-# error: aws:ec2/routeTable:RouteTable resource 'new-rt' has a problem: route.0: invalid or unknown key: destination_cidr_block
-
+# https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes
 # FIXED! s/destination_cidr_block/cidr_block/g
 
 rt=ec2.RouteTable('new-rt',
@@ -58,6 +33,10 @@ route=ec2.Route('default-route',
         destination_cidr_block='0.0.0.0/0',
         gateway_id=igw.id,
         route_table_id=rt.id)
+
+rta = ec2.RouteTableAssociation('new-rta',
+        route_table_id = rt.id,
+        subnet_id = subnet.id)
 
 sg=ec2.SecurityGroup(resource_name='new-sg',
         description='HTTP and SSH ingress',
@@ -71,17 +50,7 @@ sg=ec2.SecurityGroup(resource_name='new-sg',
 bucket=s3.Bucket(resource_name='new-bucket',
         tags={'Name': 'infra bucket', 'Creator': 'timc'})
 
-# TODO add instance to new VPC
-#   seems like that's by association w/ subnet
-#
-# TODO bug? `associate_public_ip_address=False` doesn't seem to do anything
-#   edit: after `pulumi destroy` and `pulumi update`, seems to be working
-#
-# TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
-#   edit: unsupported feature on the AWS side
-#   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
 
-# TODO tags
 server=ec2.Instance(
         resource_name='new-ec2',
         ami='ami-032509850cf9ee54e',  # TypeError if not present
@@ -104,7 +73,7 @@ eip=ec2.Eip(resource_name='new-eip',
         tags={'Name': 'infra eip', 'Creator': 'timc'}
         )
 
-# Export the DNS name of the bucket
+# stack exports
 pulumi.export('vpcID', vpc.id)
 pulumi.export('subnetID', subnet.id)
 pulumi.export('internetGatewayID', igw.id)
