@@ -139,7 +139,7 @@ Correction: 53 seconds.
 
 * Near the top is this status.
 
-> `+   pulumi:pulumi:Stack               vpc-with-ec2-dev  created`
+> +   pulumi:pulumi:Stack               vpc-with-ec2-dev  created
 
 `vpc-with-ec2` is the name of the project, and the stack short name `dev` is appended to it, for a fully qualified stack name.
 
@@ -152,10 +152,10 @@ Correction: 53 seconds.
 Time to make sure we can `SSH` to your brand new instance. It'll look like this.
 
     ➜ ssh -l ec2-user -i ~/Downloads/sl-us-west-2.pem $(pulumi stack output elasticIP)
-    The authenticity of host '54.244.65.81 (54.244.65.81)' can't be established.
+    The authenticity of host '35.161.22.167 (35.161.22.167)' can't be established.
     ECDSA key fingerprint is SHA256:apdlxOZpKMFhflqI0qF6+3V2zsxfZ1QBMP4LIjTua6k.
     Are you sure you want to continue connecting (yes/no)? yes
-    Warning: Permanently added '54.244.65.81' (ECDSA) to the list of known hosts.
+    Warning: Permanently added '35.161.22.167' (ECDSA) to the list of known hosts.
 
            __|  __|_  )
            _|  (     /   Amazon Linux 2 AMI
@@ -163,9 +163,10 @@ Time to make sure we can `SSH` to your brand new instance. It'll look like this.
 
     https://aws.amazon.com/amazon-linux-2/
 
-    [ec2-user@ip-10-0-12-250 ~]$ exit
+
+    [ec2-user@ ip-10-0-15-105 ~]$ exit
     logout
-    Connection to 54.244.65.81 closed.
+    Connection to 35.161.22.167 closed.
 
 <!--
 
