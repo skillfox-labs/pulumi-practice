@@ -29,26 +29,19 @@ Let's use the infrastructure project `vpc-with-ec2` to walk thru the rest of the
 
 ### Set up a virtual environment
 
-    ```bash
     ➜ cd pulumi-practiceinfrastructure/vpc-with-ec2/
-
     ➜ python3 -m venv venv
-
     ➜ source venv/bin/activate
-    ```
 
 ### Fetch `Pulumi` dependency libraries
 
 Here's everything we just created, including `requirements.txt`.
 
-    ```bash
     ➜ ls
     Pulumi.dev.yaml  Pulumi.yaml      __main__.py      requirements.txt venv
-    ```
 
 `pip install` is all we need. Also `pip` is nagging me to upgrade.
 
-    ```bash
     ➜ pip install -r requirements.txt
     Collecting pulumi>=0.16.4 (from -r requirements.txt (line 1))
       Downloading https://files.pythonhosted.org/packages/bd/60/93682c12996d2aca11081cb88473562d14b860ce0aa820f2de7f7414d2e7/pulumi-0.16.17-py2.py3-none-any.whl (130kB)
@@ -67,20 +60,16 @@ Here's everything we just created, including `requirements.txt`.
     Successfully installed grpcio-1.19.0 protobuf-3.6.1 pulumi-0.16.17 pulumi-aws-0.16.10 six-1.12.0
     You are using pip version 18.1, however version 19.0.3 is available.
     You should consider upgrading via the 'pip install --upgrade pip' command.
-    ```
 
 ### Deploy a stack
 
 Make sure we're in the right place.
 
-    ```bash
     ➜ pwd
     /Users/timc/z/src/github.com/tcondit/pulumi-practice/infrastructure/vpc-with-ec2
-    ```
 
 Start the update. Note we're deploying a [Pulumi stack](https://pulumi.io/reference/stack.html) called `dev`.
 
-    ```
     ➜ pulumi up
     Previewing update (dev):
 
@@ -105,11 +94,9 @@ Start the update. Note we're deploying a [Pulumi stack](https://pulumi.io/refere
     > yes
       no
       details
-    ```
 
 You can see we've got options (`yes`, `no`, `details`) on how to proceed. There's a lot here, so check out `details` at some point. For now, let's perform this update. This step will take a minute.
 
-    ```bash
     Do you want to perform this update? yes
     Updating (dev):
 
@@ -145,7 +132,6 @@ You can see we've got options (`yes`, `no`, `details`) on how to proceed. There'
     Duration: 53s
 
     Permalink: https://app.pulumi.com/tcondit/vpc-with-ec2/dev/updates/41
-    ```
 
 Correction: 53 seconds.
 
@@ -165,7 +151,6 @@ Correction: 53 seconds.
 
 Time to make sure we can `SSH` to your brand new instance. It'll look like this.
 
-    ```bash
     ➜ ssh -l ec2-user -i ~/Downloads/sl-us-west-2.pem $(pulumi stack output elasticIP)
     The authenticity of host '54.244.65.81 (54.244.65.81)' can't be established.
     ECDSA key fingerprint is SHA256:apdlxOZpKMFhflqI0qF6+3V2zsxfZ1QBMP4LIjTua6k.
@@ -181,7 +166,6 @@ Time to make sure we can `SSH` to your brand new instance. It'll look like this.
     [ec2-user@ip-10-0-12-250 ~]$ exit
     logout
     Connection to 54.244.65.81 closed.
-    ```
 
 <!--
 
