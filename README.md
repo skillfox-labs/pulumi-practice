@@ -37,32 +37,13 @@ Let's use the infrastructure project `vpc-with-ec2` to walk thru the rest of the
 
 ### Fetch `Pulumi` dependency libraries
 
-> ➜ ls
-> Pulumi.dev.yaml  Pulumi.yaml      __main__.py      requirements.txt venv
-
-> ➜ pip install -r requirements.txt
-> Collecting pulumi>=0.16.4 (from -r requirements.txt (line 1))
->   Downloading https://files.pythonhosted.org/packages/bd/60/93682c12996d2aca11081cb88473562d14b860ce0aa820f2de7f7414d2e7/pulumi-0.16.17-py2.py3-none-any.whl (130kB)
->     100% |████████████████████████████████| 133kB 1.2MB/s
-> Collecting pulumi_aws>=0.16.2 (from -r requirements.txt (line 2))
->   Using cached https://files.pythonhosted.org/packages/0c/24/fee18eba45725b711cb3566e164a7d77dea6949c28b526c8c91b389151d7/pulumi_aws-0.16.10.tar.gz
-> Collecting protobuf>=3.6.0 (from pulumi>=0.16.4->-r requirements.txt (line 1))
->   Using cached https://files.pythonhosted.org/packages/18/e7/785830a65d1f1faba7dccfa8314f7afded1db8cc2860218226ba4b3f6150/protobuf-3.6.1-cp37-cp37m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
-> Collecting grpcio>=1.9.1 (from pulumi>=0.16.4->-r requirements.txt (line 1))
->   Using cached https://files.pythonhosted.org/packages/df/33/c0561fe7c5e235325255f46c08bd3d07f2c80824feb22d057328eff1f8b7/grpcio-1.19.0-cp37-cp37m-macosx_10_9_x86_64.whl
-> Requirement already satisfied: setuptools in ./venv/lib/python3.7/site-packages (from protobuf>=3.6.0->pulumi>=0.16.4->-r requirements.txt (line 1)) (40.6.2)
-> Collecting six>=1.9 (from protobuf>=3.6.0->pulumi>=0.16.4->-r requirements.txt (line 1))
->   Using cached https://files.pythonhosted.org/packages/73/fb/00a976f728d0d1fecfe898238ce23f502a721c0ac0ecfedb80e0d88c64e9/six-1.12.0-py2.py3-none-any.whl
-> Installing collected packages: six, protobuf, grpcio, pulumi, pulumi-aws
->   Running setup.py install for pulumi-aws ... done
-> Successfully installed grpcio-1.19.0 protobuf-3.6.1 pulumi-0.16.17 pulumi-aws-0.16.10 six-1.12.0
-> You are using pip version 18.1, however version 19.0.3 is available.
-> You should consider upgrading via the 'pip install --upgrade pip' command.
-
+Here's everything we just created, including `requirements.txt`.
 
 ```bash
 ➜ ls
 Pulumi.dev.yaml  Pulumi.yaml      __main__.py      requirements.txt venv
+
+`pip install` is all we need.
 
 ➜ pip install -r requirements.txt
 Collecting pulumi>=0.16.4 (from -r requirements.txt (line 1))
