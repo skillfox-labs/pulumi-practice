@@ -83,7 +83,7 @@ Here's everything we just created, including `requirements.txt`.
 Make sure we're in the right place.
 
     ➜ pwd
-    /Users/timc/z/src/github.com/tcondit/pulumi-practice/infrastructure/vpc-with-ec2
+    ~/src/pulumi-practice/infrastructure/vpc-with-ec2
 
 Start the update. Note we're deploying a [Pulumi stack](https://pulumi.io/reference/stack.html) called `dev`.
 
@@ -158,11 +158,11 @@ Correction: 53 seconds.
 
 > pulumi:pulumi:Stack               vpc-with-ec2-dev  created
 
-`vpc-with-ec2` is the name of the project, and the stack short name `dev` is appended to it, for a fully qualified stack name.
+`vpc-with-ec2` is the name of the project. The stack short name `dev` is appended to it, making a fully qualified stack name.
 
 * `Pulumi` created 11 [Resources](https://pulumi.io/tour/programs-resources.html), based on Python objects.
 
-* Near the bottom is a `Permalink` to your new stack! Check it out! Lots of good stuff there.
+* Near the bottom is a `Permalink` to my new stack. You won't be able to view that one, but create your own and check it out! Lots of good stuff there.
   * :fire: Hot tip: if you use [iTerm2](https://www.iterm2.com/) on MacOS, you can `Command+Click` the live link.
 
 * The `elasticIP` shown above is long gone, but yours should work! We'll `SSH` to your instance next.
@@ -209,7 +209,17 @@ Just supply the basename of your private key with neither a path, nor an extensi
 
 * Your key needs to be `chmod 600`
 
-* This `AMI` is Amazon Linux, which is a CentOS derivative. So the default username is `ec2-user`.
+* The default username is `ec2-user`.
+
+* I haven't explained [stack exports](https://pulumi.io/tour/programs-exports.html) yet! They're great! Here's how to export an attribute called `elasticIP`, and make it available to query. The `eip` Resource was defined earlier.
+
+    pulumi.export('elasticIP', eip.public_ip)
+
+* This allows us to make part of the call to `ssh` more general.
+
+    ➜ ssh -l ec2-user -i ~/Downloads/sl-us-west-2.pem $(pulumi stack output elasticIP)
+
+* __TIP__ If you're not familiar with this shell syntax, `$()` is a [command substitution](http://www.tldp.org/LDP/abs/html/commandsub.html) operator. Whatever is inside the parentheses is executed in a subshell and the result is passed to the enclosing shell. The leading `$` says to show the result. So we're calling `pulumi stack output elasticIP` in a subshell and passing the result to the enclosing shell. Put it together and we're saying "ssh to whatever IP address the `elasticIP` stack export currently contains".
 
 * Don't forget to `pulumi destroy` the stack when you're done with it!
 
