@@ -78,7 +78,7 @@ Make sure we're in the right place.
 /Users/timc/z/src/github.com/tcondit/pulumi-practice/infrastructure/vpc-with-ec2
 ```
 
-Start the update. Note we're on a [Pulumi stack](https://pulumi.io/reference/stack.html) called `dev`.
+Start the update. Note we're deploying a [Pulumi stack](https://pulumi.io/reference/stack.html) called `dev`.
 
 ```
 ➜ pulumi up
@@ -155,14 +155,25 @@ Correction: 53 seconds.
 
 > `+   pulumi:pulumi:Stack               vpc-with-ec2-dev  created`
 
-`vpc-with-ec2` is the name of the project, and the stack ID `dev` is appended to it, for a fully qualified stack name.
+`vpc-with-ec2` is the name of the project, and the stack short name `dev` is appended to it, for a fully qualified stack name.
 
 * `Pulumi` created 11 [Resources](https://pulumi.io/tour/programs-resources.html), based on Python objects.
 
-* The `elasticIP` shown above is disabled, but yours should work! We'll `SSH` to your instance next.
+* The `elasticIP` shown above is long gone, but yours should work! We'll `SSH` to your instance next.
 
 ## Go!
 
 Time to make sure we can `SSH` to your brand new instance.
 
+<!--
+
+1. move my key ; show that we can get to the instance but can't get in
+2. show `pulumi destroy`
+3. update `key_name`
+4. update `pulumi config` with secret
+5. describe the problem with having Pulumi encrypt your private key ; move on anyway
+6. `pulumi up` ; this time check the details ; ensure the user's `key_name` is pulled in
+7. `ssh` for real this time (Amazon Linux: `ec2-user`)
+
+-->
 
