@@ -8,6 +8,14 @@ from pulumi_aws import ec2, s3
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
 #   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
+
+# TODO on reflection, this may not be such a good idea. It's causing "stack
+# churn", where `pulumi update` is going "oh, hey, the AZ has changed, we need
+# to replace the subnet, route table assocation, eip and instance".
+#
+# It gets better! ;)
+# > error: Plan apply failed: Error creating subnet: InvalidSubnet.Conflict: The CIDR '10.0.0.0/20' conflicts with another subnet
+
 random.seed()
 availability_zones = ['us-west-2a', 'us-west-2b', 'us-west-2c'] # t2.micro not supported in us-west-2d
 _availability_zone = random.choice(availability_zones)
@@ -33,7 +41,7 @@ subnet = ec2.Subnet(resource_name = 'new-subnet',
 
 # the routeID has got the routeTableID embedded in it somehow
 #   routeID            r-rtb-0bc47b98495839d0d1080289494
-#   routeTableID       rtb-0bc47b98495839d0d
+#   routeTableID         rtb-0bc47b98495839d0d
 
 rt = ec2.RouteTable('new-rt',
         vpc_id = vpc.id,
@@ -53,8 +61,8 @@ route = ec2.Route('default-route',
         gateway_id = igw.id,
         route_table_id = rt.id)
 
-# AWS: I could (and maybe should) have used a MainRouteTableAssociation here.
-# As it is, I've got a main route table (comes with the VPC) sitting idle.
+# AWS: Maybe I should drop the route definition above, and use a
+# MainRouteTableAssociation here. The main route table is sitting idle.
 
 rta = ec2.RouteTableAssociation('new-rta',
         route_table_id = rt.id,
@@ -86,6 +94,7 @@ server = ec2.Instance(
         availability_zone = _availability_zone,
         subnet_id = subnet.id,
         associate_public_ip_address = False,
+        key_name = 'sl-us-west-2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
