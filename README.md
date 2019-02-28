@@ -1,31 +1,48 @@
 # pulumi-practice
 
-### Learning Pulumi by doing. Mostly Python.
+_Learning Pulumi by doing. Mostly Python._
 
-This repo contains infrastructure code for AWS, built with Python-flavored Pulumi. Each subdirectory contains a standalone stack. As an experiment, each of these stacks is a separate release. We'll see if that works, or if not, where it breaks.
+## Learning what now?
 
-## Get ready
+> Pulumi is a platform for building and deploying cloud infrastructure and applications in your favorite language on any cloud.
+>
+> &mdash;<cite>[Pulumi](https://pulumi.io/quickstart/)</cite>
 
-If not already available, you'll need to install a few things. I'm assuming you're on Mac or Linux. Windows may work too.
+Pulumi produces results similar to [Terraform](https://www.terraform.io/) by HashiCorp. It's early days for them, but you may prefer the Pulumi user experience.
 
-The instructions at [aws-py-webserver](https://github.com/pulumi/examples/tree/master/aws-py-webserver) should get you most of the way there, while walking you thru your first AWS infrastructure deployment. Bonus!
+This repo contains infrastructure code for AWS, built with Python. There are other options. For example, Pulumi's TypeScript support is farthest along at this point. However, I'd prefer to deep dive on one cloud solution (_VM-based infrastructure_) on a single provider (_AWS_), using one language (_Python_) at a time.
 
-If you skipped that, here's the full list:
+Future possibilities include:
 
+* infrastructure on AWS in TypeScript
+* ready-to-run stacks for Docker, Kubernetes or Serverless (using _Python_ or _TypeScript_)
+* ready-to-run stacks for other cloud providers (using _Python_ or _TypeScript_)
+
+Quick note: Each subdirectory contains a standalone stack. As an experiment, each of these stacks is a separate release. We'll see if that works, or if not, where it breaks.
+
+## Ready ...
+
+You may need to install a few things. I'm assuming you're on Mac or Linux. Windows may work too.
+
+If you're up for it, the instructions at [aws-py-webserver](https://github.com/pulumi/examples/tree/master/aws-py-webserver) should get you most of the way there, while walking you thru your first AWS infrastructure deployment. Bonus!
+
+Whether you try that project or not, please make sure you've got everything on this list:
+
+* This repo
 * An AWS account. ([sign up](https://aws.amazon.com/))
 * Python v3.6 or later. ([option 1 (recommended)](https://docs.python-guide.org/starting/installation/) or [option 2](https://www.python.org/downloads/))
-  * Note: If you go with option one, you can stop after doing the initial install. Since v3.3, Python has shipped with [venv](https://docs.python.org/3/library/venv.html) which is what we'll use to create and manage virtual environments.
+  * If you go with option one, you can stop after doing the initial install. Since v3.3, Python has shipped with [venv](https://docs.python.org/3/library/venv.html) which is what we'll use to create and manage virtual environments.
 * pip3, but note that it should have been included with Python v3.6 or later. Link provided just in case, but chances are good you won't need it. ([install](https://pip.pypa.io/en/stable/installing/))
 * A Pulumi account ([sign up](https://app.pulumi.com/welcome))
 * The Pulumi CLI ([install](https://pulumi.io/quickstart/))
 * AWS credentials ([configure](https://pulumi.io/quickstart/aws/setup.html))
 * An SSH key pair ([create](https://help.github.com/en/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key))
 
-## Get set
+## Set ...
 
 The action is in the project subdirectories. Each subdirectory is intended to be self-contained. If you find that's not the case, feel free to open an issue.
 
-Let's use the infrastructure project `vpc-with-ec2` to walk thru the rest of the steps. You'll set up a virtual environment with `venv`, fetch `Pulumi` dependency libraries, then deploy the stack.
+Let's use project `infrastructure/vpc-with-ec2` to walk thru the rest of the steps. You'll set up a virtual environment, fetch Pulumi dependency libraries, deploy the stack, then verify access. Easy!
 
 ### Set up a virtual environment
 
