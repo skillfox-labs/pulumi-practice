@@ -213,11 +213,15 @@ Just supply the basename of your private key with neither a path, nor an extensi
 
 * I haven't explained [stack exports](https://pulumi.io/tour/programs-exports.html) yet! They're great! Here's how to export an attribute called `elasticIP`, and make it available to query. The `eip` Resource was defined earlier.
 
+    ```bash
     pulumi.export('elasticIP', eip.public_ip)
+    ```
 
 * This allows us to make part of the call to `ssh` more general.
 
+    ```bash
     ➜ ssh -l ec2-user -i ~/Downloads/sl-us-west-2.pem $(pulumi stack output elasticIP)
+    ```
 
 * __TIP__ If you're not familiar with this shell syntax, `$()` is a [command substitution](http://www.tldp.org/LDP/abs/html/commandsub.html) operator. Whatever is inside the parentheses is executed in a subshell and the result is passed to the enclosing shell. The leading `$` says to show the result. So we're calling `pulumi stack output elasticIP` in a subshell and passing the result to the enclosing shell. Put it together and we're saying "ssh to whatever IP address the `elasticIP` stack export currently contains".
 
