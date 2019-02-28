@@ -135,15 +135,17 @@ You can see we've got options (`yes`, `no`, `details`) on how to proceed. There'
 
 Correction: 53 seconds.
 
-#### Things to note:
+#### Things to note
 
 * Near the top is this status.
 
-> +   pulumi:pulumi:Stack               vpc-with-ec2-dev  created
+> pulumi:pulumi:Stack               vpc-with-ec2-dev  created
 
 `vpc-with-ec2` is the name of the project, and the stack short name `dev` is appended to it, for a fully qualified stack name.
 
 * `Pulumi` created 11 [Resources](https://pulumi.io/tour/programs-resources.html), based on Python objects.
+
+* Near the bottom is a `Permalink` to your new stack! Check it out! Lots of good stuff there. Hot tip: if you use [iTerm2](https://www.iterm2.com/) on MacOS, you can `Command+Click` the live link. :fire:
 
 * The `elasticIP` shown above is long gone, but yours should work! We'll `SSH` to your instance next.
 
@@ -163,10 +165,31 @@ Time to make sure we can `SSH` to your brand new instance. It'll look like this.
 
     https://aws.amazon.com/amazon-linux-2/
 
-
     [ec2-user@ ip-10-0-15-105 ~]$ exit
     logout
     Connection to 35.161.22.167 closed.
+
+#### Things to note
+
+You'll have to update the `key_name` attribute in the `server` Resource.
+
+    server = ec2.Instance(
+            resource_name = 'new-ec2',
+            ami = 'ami-032509850cf9ee54e',
+            instance_type = _instance_type,
+            security_groups = [sg.id],
+            availability_zone = _availability_zone,
+            subnet_id = subnet.id,
+            associate_public_ip_address = False,
+            key_name = 'sl-us-west-2',                        // <== CHANGE ME
+            tags = {'Name': 'infra ec2', 'Creator': 'timc'}
+            )
+
+Just supply the basename of your private key with neither a path, nor an extension. In other words, use something like `mykey` rather than `mykey.pem` or even worse, `~/.ssh/mykey.pem`. You'll provide the fully qualified name to `ssh` on the command line.
+
+Also, your key needs to be `chmod 600`. And don't forget to `pulumi destroy` the stack when you're done with it!
+
+Happy trails!!
 
 <!--
 
