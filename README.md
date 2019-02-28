@@ -6,9 +6,9 @@ This repo contains infrastructure code for AWS, built with Python-flavored Pulum
 
 ## Get ready
 
-I'm assuming you're on Mac or Linux. Windows may work too.
+If not already available, you'll need to install a few things. I'm assuming you're on Mac or Linux. Windows may work too.
 
-The instructions at [aws-py-webserver](https://github.com/pulumi/examples/tree/master/aws-py-webserver) should get you most of the way there, while walking you thru your first AWS infrastructure deployment.
+The instructions at [aws-py-webserver](https://github.com/pulumi/examples/tree/master/aws-py-webserver) should get you most of the way there, while walking you thru your first AWS infrastructure deployment. Bonus!
 
 If you skipped that, here's the full list:
 
@@ -46,7 +46,7 @@ Here's everything we just created, including `requirements.txt`.
 Pulumi.dev.yaml  Pulumi.yaml      __main__.py      requirements.txt venv
 ```
 
-`pip install` is all we need.
+`pip install` is all we need. Also `pip` is nagging me to upgrade.
 
 ```bash
 ➜ pip install -r requirements.txt
@@ -69,6 +69,100 @@ You are using pip version 18.1, however version 19.0.3 is available.
 You should consider upgrading via the 'pip install --upgrade pip' command.
 ```
 
-### Deploy the stack
+### Deploy a stack
 
-TODO
+Make sure we're in the right place.
+
+```bash
+➜ pwd
+/Users/timc/z/src/github.com/tcondit/pulumi-practice/infrastructure/vpc-with-ec2
+```
+
+Start the update. Note we're on a [Pulumi stack](https://pulumi.io/reference/stack.html) called `dev`.
+
+```
+➜ pulumi up
+Previewing update (dev):
+
+     Type                              Name              Plan
+ +   pulumi:pulumi:Stack               vpc-with-ec2-dev  create
+ +   ├─ aws:ec2:Vpc                    new-vpc           create
+ +   ├─ aws:s3:Bucket                  new-bucket        create
+ +   ├─ aws:ec2:InternetGateway        new-igw           create
+ +   ├─ aws:ec2:Subnet                 new-subnet        create
+ +   ├─ aws:ec2:SecurityGroup          new-sg            create
+ +   ├─ aws:ec2:RouteTable             new-rt            create
+ +   ├─ aws:ec2:Instance               new-ec2           create
+ +   ├─ aws:ec2:RouteTableAssociation  new-rta           create
+ +   ├─ aws:ec2:Route                  default-route     create
+ +   └─ aws:ec2:Eip                    new-eip           create
+
+Resources:
+    + 11 to create
+
+
+Do you want to perform this update?
+> yes
+  no
+  details
+```
+
+You can see we've got options (`yes`, `no`, `details`) on how to proceed. There's a lot here, so check out `details` at some point. For now, let's perform this update. This step will take a minute.
+
+```bash
+Do you want to perform this update? yes
+Updating (dev):
+
+     Type                              Name              Status
+ +   pulumi:pulumi:Stack               vpc-with-ec2-dev  created
+ +   ├─ aws:s3:Bucket                  new-bucket        created
+ +   ├─ aws:ec2:Vpc                    new-vpc           created
+ +   ├─ aws:ec2:InternetGateway        new-igw           created
+ +   ├─ aws:ec2:Subnet                 new-subnet        created
+ +   ├─ aws:ec2:SecurityGroup          new-sg            created
+ +   ├─ aws:ec2:RouteTable             new-rt            created
+ +   ├─ aws:ec2:Instance               new-ec2           created
+ +   ├─ aws:ec2:RouteTableAssociation  new-rta           created
+ +   ├─ aws:ec2:Route                  default-route     created
+ +   └─ aws:ec2:Eip                    new-eip           created
+
+Outputs:
+    AMI              : "ami-032509850cf9ee54e"
+    bucket_name      : "new-bucket-5d4716d.s3.amazonaws.com"
+    elasticIP        : "35.161.22.167"
+    instanceID       : "i-0019a7f0311a54a27"
+    internetGatewayID: "igw-0ad633ffd2ccc0ec1"
+    privateIP        : "10.0.15.105"
+    routeID          : "r-rtb-0765dc7e5e980dedf1080289494"
+    routeTableID     : "rtb-0765dc7e5e980dedf"
+    securityGroupID  : "sg-0b9cb0fe692920ebb"
+    subnetID         : "subnet-0df76499eb12b2f53"
+    vpcID            : "vpc-0cd8288ab71785033"
+
+Resources:
+    + 11 created
+
+Duration: 53s
+
+Permalink: https://app.pulumi.com/tcondit/vpc-with-ec2/dev/updates/41
+```
+
+Correction: 53 seconds.
+
+#### Things to note:
+
+* Near the top is this status.
+
+> `+   pulumi:pulumi:Stack               vpc-with-ec2-dev  created`
+
+`vpc-with-ec2` is the name of the project, and the stack ID `dev` is appended to it, for a fully qualified stack name.
+
+* `Pulumi` created 11 [Resources](https://pulumi.io/tour/programs-resources.html), based on Python objects.
+
+* The `elasticIP` shown above is disabled, but yours should work! We'll `SSH` to your instance next.
+
+## Go!
+
+Time to make sure we can `SSH` to your brand new instance.
+
+
