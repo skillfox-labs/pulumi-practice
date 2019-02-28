@@ -29,11 +29,13 @@ Let's use the infrastructure project `vpc-with-ec2` to walk thru the rest of the
 
 ### Set up a virtual environment
 
-> ➜ cd pulumi-practiceinfrastructure/vpc-with-ec2/
+```bash
+➜ cd pulumi-practiceinfrastructure/vpc-with-ec2/
 
-> ➜ python3 -m venv venv
+➜ python3 -m venv venv
 
-> ➜ source venv/bin/activate
+➜ source venv/bin/activate
+```
 
 ### Fetch `Pulumi` dependency libraries
 
@@ -42,9 +44,11 @@ Here's everything we just created, including `requirements.txt`.
 ```bash
 ➜ ls
 Pulumi.dev.yaml  Pulumi.yaml      __main__.py      requirements.txt venv
+```
 
 `pip install` is all we need.
 
+```bash
 ➜ pip install -r requirements.txt
 Collecting pulumi>=0.16.4 (from -r requirements.txt (line 1))
   Downloading https://files.pythonhosted.org/packages/bd/60/93682c12996d2aca11081cb88473562d14b860ce0aa820f2de7f7414d2e7/pulumi-0.16.17-py2.py3-none-any.whl (130kB)
