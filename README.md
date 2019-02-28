@@ -174,6 +174,7 @@ Time to make sure we can `SSH` to your brand new instance. It'll look like this.
 
 * You'll have to update the `key_name` attribute in the `server` Resource.
 
+    ```bash
     server = ec2.Instance(
             resource_name = 'new-ec2',
             ami = 'ami-032509850cf9ee54e',
@@ -185,6 +186,7 @@ Time to make sure we can `SSH` to your brand new instance. It'll look like this.
             key_name = 'sl-us-west-2',                        // <== CHANGE ME
             tags = {'Name': 'infra ec2', 'Creator': 'timc'}
             )
+    ```
 
 Just supply the basename of your private key with neither a path, nor an extension. In other words, use something like `mykey` rather than `mykey.pem` or even worse, `~/.ssh/mykey.pem`. You'll provide the fully qualified name to `ssh` on the command line.
 
