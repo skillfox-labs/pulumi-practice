@@ -145,7 +145,8 @@ Correction: 53 seconds.
 
 * `Pulumi` created 11 [Resources](https://pulumi.io/tour/programs-resources.html), based on Python objects.
 
-* Near the bottom is a `Permalink` to your new stack! Check it out! Lots of good stuff there. Hot tip: if you use [iTerm2](https://www.iterm2.com/) on MacOS, you can `Command+Click` the live link. :fire:
+* Near the bottom is a `Permalink` to your new stack! Check it out! Lots of good stuff there.
+  * :fire: Hot tip: if you use [iTerm2](https://www.iterm2.com/) on MacOS, you can `Command+Click` the live link.
 
 * The `elasticIP` shown above is long gone, but yours should work! We'll `SSH` to your instance next.
 
@@ -171,7 +172,7 @@ Time to make sure we can `SSH` to your brand new instance. It'll look like this.
 
 #### Things to note
 
-You'll have to update the `key_name` attribute in the `server` Resource.
+* You'll have to update the `key_name` attribute in the `server` Resource.
 
     server = ec2.Instance(
             resource_name = 'new-ec2',
@@ -187,7 +188,11 @@ You'll have to update the `key_name` attribute in the `server` Resource.
 
 Just supply the basename of your private key with neither a path, nor an extension. In other words, use something like `mykey` rather than `mykey.pem` or even worse, `~/.ssh/mykey.pem`. You'll provide the fully qualified name to `ssh` on the command line.
 
-Also, your key needs to be `chmod 600`. And don't forget to `pulumi destroy` the stack when you're done with it!
+* Your key needs to be `chmod 600`
+
+* This `AMI` is Amazon Linux, which is a CentOS derivative. So the default username is `ec2-user`.
+
+* Don't forget to `pulumi destroy` the stack when you're done with it!
 
 Happy trails!!
 
