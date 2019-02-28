@@ -1,5 +1,4 @@
 import pulumi
-#import random
 
 from pulumi_aws import ec2, s3
 
@@ -9,21 +8,12 @@ from pulumi_aws import ec2, s3
 #   edit: unsupported feature on the AWS side
 #   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
 
-# TODO on reflection, this may not be such a good idea. It's causing "stack
-# churn", where `pulumi update` is going "oh, hey, the AZ has changed, we need
-# to replace the subnet, route table assocation, eip and instance".
-#
-# It gets better! ;)
-# > error: Plan apply failed: Error creating subnet: InvalidSubnet.Conflict: The CIDR '10.0.0.0/20' conflicts with another subnet
-
 # TODO need a solution here. I'd like to randomly choose a suitable AZ.
 # However, once an AZ is chosen, that choice should be stable across `pulumi
 # update`s, so that we're not causing what I call "stack churn". For now I'm
-# going with a static choice.
-#
-#random.seed()
-#availability_zones = ['us-west-2a', 'us-west-2b', 'us-west-2c'] # t2.micro not supported in us-west-2d
-#_availability_zone = random.choice(availability_zones)
+# going with a static choice. The original motivation is that in `us-west-2`,
+# `t2.micro` is an unsupported instance type. So about one time in four, when
+# creating a new stack, Pulumi chooses an AZ and everything fails.
 
 _availability_zone = 'us-west-2b'
 _instance_type = 't2.micro'
