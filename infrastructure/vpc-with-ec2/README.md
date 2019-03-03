@@ -27,7 +27,7 @@ Deactivating is simple too
 You may want to set some persistent configurations. For instance, if you wanted to use a named profile called `work` in `~/.aws/credentials`, e.g.,
 
     [default]
-    aws_access_key_id = AKIAOOWEICOSHEPHIXEN
+    aws_access_key_id = AKIANACHOCHEESYPOOFS
     aws_secret_access_key = LtmchHzBvLGOFhTY8+Ke7baRO9LcnABbvli4ebAV
 
     [work]
