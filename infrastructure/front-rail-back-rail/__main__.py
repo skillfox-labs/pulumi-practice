@@ -20,17 +20,17 @@ _instance_type = 't2.micro'
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
-        tags = {'Name': 'infra vpc', 'Creator': 'timc'})
+        tags = {'Name': 'infra vpc (front-rail-back-rail)', 'Creator': 'timc'})
 
 igw = ec2.InternetGateway(resource_name = 'new-igw',
         vpc_id = vpc.id,
-        tags = {'Name': 'infra internet gateway', 'Creator': 'timc'})
+        tags = {'Name': 'infra internet gateway (front-rail-back-rail)', 'Creator': 'timc'})
 
 subnet = ec2.Subnet(resource_name = 'new-subnet',
         vpc_id = vpc.id,
         cidr_block = '10.0.0.0/20',
         availability_zone = _availability_zone,
-        tags = {'Name': 'infra subnet', 'Creator': 'timc'})
+        tags = {'Name': 'infra subnet (front-rail-back-rail)', 'Creator': 'timc'})
 
 # https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes
 # FIXED! s/destination_cidr_block/cidr_block/g
@@ -42,7 +42,7 @@ subnet = ec2.Subnet(resource_name = 'new-subnet',
 rt = ec2.RouteTable('new-rt',
         vpc_id = vpc.id,
         routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
-        tags = {'Name': 'infra route table', 'Creator': 'timc'})
+        tags = {'Name': 'infra route table (front-rail-back-rail)', 'Creator': 'timc'})
 
 # AWS: source-based routing. To get closer to a specific destination CIDR,
 # forward traffic to corresponding target, e.g.,
@@ -71,10 +71,10 @@ sg = ec2.SecurityGroup(resource_name = 'new-sg',
             {'protocol': 'tcp', 'fromPort': 22, 'toPort': 22, 'cidrBlocks': ['0.0.0.0/0']},
             {'protocol': 'tcp', 'fromPort': 80, 'toPort': 80, 'cidrBlocks': ['0.0.0.0/0']},
             ],
-        tags = {'Name': 'infra security group', 'Creator': 'timc'})
+        tags = {'Name': 'infra security group (front-rail-back-rail)', 'Creator': 'timc'})
 
 bucket = s3.Bucket(resource_name = 'new-bucket',
-        tags = {'Name': 'infra bucket', 'Creator': 'timc'})
+        tags = {'Name': 'infra bucket (front-rail-back-rail)', 'Creator': 'timc'})
 
 # TODO add ebs_block_devices
 # TODO add volume_tags
@@ -93,7 +93,7 @@ server = ec2.Instance(
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra ec2', 'Creator': 'timc'}
+        tags = {'Name': 'infra ec2 (front-rail-back-rail)', 'Creator': 'timc'}
         )
 
 # TODO bug? If you include `associate_with_private_ip = server.private_ip` but
@@ -101,7 +101,7 @@ server = ec2.Instance(
 eip = ec2.Eip(resource_name = 'new-eip',
         instance = server.id,
         associate_with_private_ip = server.private_ip,
-        tags = {'Name': 'infra eip', 'Creator': 'timc'}
+        tags = {'Name': 'infra eip (front-rail-back-rail)', 'Creator': 'timc'}
         )
 
 # stack exports
