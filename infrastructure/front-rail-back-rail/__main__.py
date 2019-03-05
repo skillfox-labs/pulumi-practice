@@ -15,7 +15,8 @@ from pulumi_aws import ec2, s3
 # `t2.micro` is an unsupported instance type. So about one time in four, when
 # creating a new stack, Pulumi chooses an AZ and everything fails.
 
-_availability_zone = 'us-west-2b'
+_availability_zone_1 = 'us-west-2b'
+#_availability_zone_2 = 'us-west-2c'
 _instance_type = 't2.micro'
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
@@ -26,11 +27,14 @@ igw = ec2.InternetGateway(resource_name = 'new-igw',
         vpc_id = vpc.id,
         tags = {'Name': 'infra internet gateway (front-rail-back-rail)', 'Creator': 'timc'})
 
-subnet = ec2.Subnet(resource_name = 'new-subnet',
+public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
         vpc_id = vpc.id,
-        cidr_block = '10.0.0.0/20',
-        availability_zone = _availability_zone,
-        tags = {'Name': 'infra subnet (front-rail-back-rail)', 'Creator': 'timc'})
+        cidr_block = '10.0.0.0/24',
+        availability_zone = _availability_zone_1,
+        tags = {'Name': 'infra public subnet (front-rail-back-rail)', 'Creator': 'timc'})
+
+# public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
+# [...]
 
 # https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes
 # FIXED! s/destination_cidr_block/cidr_block/g
@@ -39,7 +43,9 @@ subnet = ec2.Subnet(resource_name = 'new-subnet',
 #   routeID            r-rtb-0bc47b98495839d0d1080289494
 #   routeTableID         rtb-0bc47b98495839d0d
 
-rt = ec2.RouteTable('new-rt',
+# TODO does it make sense to have `public_subnet_` in the name of a route
+# table? _Maybe_ just `public_rt` but even that seems a bit overspecified.
+public_subnet_rt = ec2.RouteTable('new-public-subnet-rt',
         vpc_id = vpc.id,
         routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
         tags = {'Name': 'infra route table (front-rail-back-rail)', 'Creator': 'timc'})
@@ -52,18 +58,18 @@ rt = ec2.RouteTable('new-rt',
 # 172.31.0.0/16 pcx-1a2b3c4d
 # 0.0.0.0/0     igw-11aa22bb
 
-route = ec2.Route('default-route',
+# AKA 'new-igw-route'
+public_route = ec2.Route('new-public-route',
         destination_cidr_block = '0.0.0.0/0',
         gateway_id = igw.id,
-        route_table_id = rt.id)
+        route_table_id = public_subnet_rt.id)
 
-# AWS: Maybe I should drop the route definition above, and use a
-# MainRouteTableAssociation here. The main route table is sitting idle.
+public_subnet_rta = ec2.RouteTableAssociation('new-public-subnet-rta',
+        route_table_id = public_subnet_rt.id,
+        subnet_id = public_subnet_1.id)
 
-rta = ec2.RouteTableAssociation('new-rta',
-        route_table_id = rt.id,
-        subnet_id = subnet.id)
-
+# TODO think about this ; come back to it later ; should I split the SGs into
+# public and private too? Why not?
 sg = ec2.SecurityGroup(resource_name = 'new-sg',
         description = 'HTTP and SSH ingress',
         vpc_id = vpc.id,
@@ -73,6 +79,53 @@ sg = ec2.SecurityGroup(resource_name = 'new-sg',
             ],
         tags = {'Name': 'infra security group (front-rail-back-rail)', 'Creator': 'timc'})
 
+public_server = ec2.Instance(
+        resource_name = 'new-public-ec2',
+        ami = 'ami-032509850cf9ee54e',  # TypeError if not present
+        instance_type = _instance_type, # TypeError if not present
+        security_groups = [sg.id],
+        availability_zone = _availability_zone_1,
+        subnet_id = public_subnet_1.id,
+        associate_public_ip_address = False,
+        key_name = 'sl-us-west-2',
+
+        # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
+        #   edit: I also changed the instance's `resource_name`
+        tags = {'Name': 'infra public ec2 (front-rail-back-rail)', 'Creator': 'timc'}
+        )
+
+# TODO bug? If you include `associate_with_private_ip = server.private_ip` but
+# leave off `instance = server.id`, the association is not created
+eip = ec2.Eip(resource_name = 'new-eip',
+        instance = public_server.id,
+        associate_with_private_ip = public_server.private_ip,
+        tags = {'Name': 'infra eip (front-rail-back-rail)', 'Creator': 'timc'}
+        )
+
+# AWS: Maybe I should drop the route definition above, and use a
+# MainRouteTableAssociation here. The main route table is sitting idle.
+
+private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
+        vpc_id = vpc.id,
+        cidr_block = '10.0.1.0/24',
+        availability_zone = _availability_zone_1,
+        tags = {'Name': 'infra private subnet (front-rail-back-rail)', 'Creator': 'timc'})
+
+private_subnet_rt = ec2.RouteTable('new-private-subnet-rt',
+        vpc_id = vpc.id,
+        routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
+        tags = {'Name': 'infra route table (front-rail-back-rail)', 'Creator': 'timc'})
+
+private_subnet_rta = ec2.RouteTableAssociation('new-private-subnet-rta',
+        route_table_id = private_subnet_rt.id,
+        subnet_id = private_subnet_1.id)
+
+private_route = ec2.Route('new-natgw-route',
+        destination_cidr_block = '0.0.0.0/0',
+        gateway_id = igw.id,
+        route_table_id = private_subnet_rt.id)
+
+# TODO I don't see this tag
 bucket = s3.Bucket(resource_name = 'new-bucket',
         tags = {'Name': 'infra bucket (front-rail-back-rail)', 'Creator': 'timc'})
 
@@ -81,40 +134,43 @@ bucket = s3.Bucket(resource_name = 'new-bucket',
 # TODO add iam_instance_profile
 # TODO add user_data
 
-server = ec2.Instance(
-        resource_name = 'new-ec2',
+private_server = ec2.Instance(
+        resource_name = 'new-private-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         security_groups = [sg.id],
-        availability_zone = _availability_zone,
-        subnet_id = subnet.id,
+        availability_zone = _availability_zone_1,
+        subnet_id = private_subnet_1.id,
         associate_public_ip_address = False,
         key_name = 'sl-us-west-2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra ec2 (front-rail-back-rail)', 'Creator': 'timc'}
+        tags = {'Name': 'infra private ec2 (front-rail-back-rail)', 'Creator': 'timc'}
         )
 
-# TODO bug? If you include `associate_with_private_ip = server.private_ip` but
-# leave off `instance = server.id`, the association is not created
-eip = ec2.Eip(resource_name = 'new-eip',
-        instance = server.id,
-        associate_with_private_ip = server.private_ip,
-        tags = {'Name': 'infra eip (front-rail-back-rail)', 'Creator': 'timc'}
-        )
-
-# stack exports
+# stack exports: shared
 pulumi.export('vpcID', vpc.id)
-pulumi.export('subnetID', subnet.id)
 pulumi.export('internetGatewayID', igw.id)
-pulumi.export('routeTableID', rt.id)
-pulumi.export('routeID', route.id)
 pulumi.export('bucket_name',  bucket.bucket_domain_name)
 pulumi.export('securityGroupID', sg.id)
-pulumi.export('AMI', server.ami)
-pulumi.export('instanceID', server.id)
 pulumi.export('elasticIP', eip.public_ip)
-pulumi.export('publicIP', server.public_ip)
-pulumi.export('privateIP', server.private_ip)
+
+# stack exports: public
+pulumi.export('[public] subnetID', public_subnet_1.id)
+pulumi.export('[public] routeTableID', public_subnet_rt.id)
+pulumi.export('[public] routeID', public_route.id)
+pulumi.export('[public] AMI', public_server.ami)
+pulumi.export('[public] instanceID', public_server.id)
+pulumi.export('[public] publicIP', public_server.public_ip)
+pulumi.export('[public] privateIP', public_server.private_ip)
+
+# stack exports: private
+pulumi.export('[private] subnetID', private_subnet_1.id)
+pulumi.export('[private] routeTableID', private_subnet_rt.id)
+pulumi.export('[private] routeID', private_route.id)
+pulumi.export('[private] AMI', private_server.ami)
+pulumi.export('[private] instanceID', private_server.id)
+pulumi.export('[private] publicIP', private_server.public_ip)
+pulumi.export('[private] privateIP', private_server.private_ip)
 
