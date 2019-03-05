@@ -3,6 +3,7 @@ import pulumi
 from pulumi_aws import ec2, s3
 
 # TODO functions and classes (encapsulation, ffs)
+# TODO add bastion host for back rail resources
 
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
@@ -68,22 +69,42 @@ public_subnet_rta = ec2.RouteTableAssociation('new-public-subnet-rta',
         route_table_id = public_subnet_rt.id,
         subnet_id = public_subnet_1.id)
 
+private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
+        vpc_id = vpc.id,
+        cidr_block = '10.0.1.0/24',
+        availability_zone = _availability_zone_1,
+        tags = {'Name': 'infra private subnet (front-rail-back-rail)', 'Creator': 'timc'})
+
 # TODO think about this ; come back to it later ; should I split the SGs into
 # public and private too? Why not?
-sg = ec2.SecurityGroup(resource_name = 'new-sg',
+#
+# Late note: can't ping private IP behind a NAT gateway ; probably need at a
+# minimum to add both instances to a default security group ; may also need to
+# update one or both route tables
+
+# s/public_sg/bastion_sg/g ?
+public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
         description = 'HTTP and SSH ingress',
         vpc_id = vpc.id,
         ingress = [
             {'protocol': 'tcp', 'fromPort': 22, 'toPort': 22, 'cidrBlocks': ['0.0.0.0/0']},
             {'protocol': 'tcp', 'fromPort': 80, 'toPort': 80, 'cidrBlocks': ['0.0.0.0/0']},
             ],
-        tags = {'Name': 'infra security group (front-rail-back-rail)', 'Creator': 'timc'})
+        egress = [
+            {'protocol': 'tcp', 'fromPort': 22, 'toPort': 22, 'cidrBlocks': [private_subnet_1.cidr_block]},
+            ],
+        tags = {'Name': 'infra public security group (front-rail-back-rail)', 'Creator': 'timc'})
+
+# TODO add ebs_block_devices
+# TODO add volume_tags
+# TODO add iam_instance_profile
+# TODO add user_data
 
 public_server = ec2.Instance(
         resource_name = 'new-public-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
-        security_groups = [sg.id],
+        security_groups = [public_sg.id],
         availability_zone = _availability_zone_1,
         subnet_id = public_subnet_1.id,
         associate_public_ip_address = False,
@@ -105,12 +126,7 @@ eip = ec2.Eip(resource_name = 'new-eip',
 # AWS: Maybe I should drop the route definition above, and use a
 # MainRouteTableAssociation here. The main route table is sitting idle.
 
-private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
-        vpc_id = vpc.id,
-        cidr_block = '10.0.1.0/24',
-        availability_zone = _availability_zone_1,
-        tags = {'Name': 'infra private subnet (front-rail-back-rail)', 'Creator': 'timc'})
-
+# TODO this needs to go out via NAT gateway
 private_subnet_rt = ec2.RouteTable('new-private-subnet-rt',
         vpc_id = vpc.id,
         routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
@@ -126,8 +142,19 @@ private_route = ec2.Route('new-natgw-route',
         route_table_id = private_subnet_rt.id)
 
 # TODO I don't see this tag
+# TODO add VPC endpoint
 bucket = s3.Bucket(resource_name = 'new-bucket',
         tags = {'Name': 'infra bucket (front-rail-back-rail)', 'Creator': 'timc'})
+
+# s/public_sg/bastion_sg/g ?
+private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
+        description = 'bastion host ingress',
+        vpc_id = vpc.id,
+        ingress = [
+            # TODO how to get CIDR block from bastion subnet?
+            {'protocol': 'tcp', 'fromPort': 22, 'toPort': 22, 'cidrBlocks': [public_subnet_1.cidr_block]},
+            ],
+        tags = {'Name': 'infra private security group (front-rail-back-rail)', 'Creator': 'timc'})
 
 # TODO add ebs_block_devices
 # TODO add volume_tags
@@ -138,7 +165,7 @@ private_server = ec2.Instance(
         resource_name = 'new-private-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
-        security_groups = [sg.id],
+        security_groups = [private_sg.id],
         availability_zone = _availability_zone_1,
         subnet_id = private_subnet_1.id,
         associate_public_ip_address = False,
@@ -153,11 +180,12 @@ private_server = ec2.Instance(
 pulumi.export('vpcID', vpc.id)
 pulumi.export('internetGatewayID', igw.id)
 pulumi.export('bucket_name',  bucket.bucket_domain_name)
-pulumi.export('securityGroupID', sg.id)
 pulumi.export('elasticIP', eip.public_ip)
 
 # stack exports: public
+pulumi.export('[public] securityGroupID', public_sg.id)
 pulumi.export('[public] subnetID', public_subnet_1.id)
+pulumi.export('[public] subnet CIDR block', public_subnet_1.cidr_block)
 pulumi.export('[public] routeTableID', public_subnet_rt.id)
 pulumi.export('[public] routeID', public_route.id)
 pulumi.export('[public] AMI', public_server.ami)
@@ -166,7 +194,9 @@ pulumi.export('[public] publicIP', public_server.public_ip)
 pulumi.export('[public] privateIP', public_server.private_ip)
 
 # stack exports: private
+pulumi.export('[private] securityGroupID', private_sg.id)
 pulumi.export('[private] subnetID', private_subnet_1.id)
+pulumi.export('[private] subnet CIDR block', private_subnet_1.cidr_block)
 pulumi.export('[private] routeTableID', private_subnet_rt.id)
 pulumi.export('[private] routeID', private_route.id)
 pulumi.export('[private] AMI', private_server.ami)
