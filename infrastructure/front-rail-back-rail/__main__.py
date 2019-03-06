@@ -4,37 +4,7 @@ from pulumi_aws import ec2, s3
 
 # TODO
 # next indicated actions:
-# * `SSH agent forwarding` to "pass thru" the bastion host from outside the VPC
 # * `NAT gateway` to allow the private `EC2` instances to reach outside the VPC
-
-
-## `SSH agent forwarding` example
-#
-# ➜ hostname
-# Tims-MacBook-Pro.local
-#
-# ➜ ssh-add ~/.ssh/sl-us-west-2.pem
-# Identity added: /Users/timc/.ssh/sl-us-west-2.pem (/Users/timc/.ssh/sl-us-west-2.pem)
-#
-# ➜ ssh -A -l ec2-user -i ~/.ssh/sl-us-west-2.pem $(pulumi stack output elasticIP)
-# Last login: Tue Mar  5 20:33:36 2019 from mobile-166-176-187-41.mycingular.net
-#
-# [ec2-user@ip-10-0-0-33 ~]$ hostname -I                    // bastion host
-# 10.0.0.33
-#
-# [ec2-user@ip-10-0-0-33 ~]$ ssh -l ec2-user 10.0.1.158
-# Last login: Tue Mar  5 23:17:50 2019 from 10.0.0.33
-#
-# [ec2-user@ip-10-0-1-158 ~]$ hostname -I                   // app server
-# 10.0.1.158
-#
-# [ec2-user@ip-10-0-0-33 ~]$ cat ~/.ssh/authorized_keys
-# ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCya8VkqA+vwqr5ZWaqoF+cvgOhaZKbjABm2XX2p0Mt/sjW4RgOj79Svn7A1JuTmH+NPVfqhZlgz10XLCv72TivGt5FrHMfiLvecfr2SVVe5+AOcAGIc3NUkSSLu32b4hLPeUk6aWMACToig3Oau2BHmCA58tCJtY3usJnXNPAPHk9z9mzC7pHeNc7inw7rCA724/Oz1HU8uX9HzynUt+s5G6vjfTGyCCVMyJ9PM6A24kiereNo0UokcNJh2cDszLGbm846FkZBNExuSpOBjDb2VxIInVIBjJL/d9gvLdbOkdaOxWYSzycs9cywFZwmR/cq9BJ/+jmsncs6DyyggmbJ sl-us-west-2
-#
-# [ec2-user@ip-10-0-0-33 ~]$ cat ~/.ssh/known_hosts
-# 10.0.1.158 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCE6fbgZneFi97cE2ACgg9CnGd3k5w3A8WpNadPEXRrVMw+8XxGKNAnrMtbCUx2Lbr4Af/Jl/hH1T6OVprl9xBo=
-
-
 
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
