@@ -91,6 +91,7 @@ private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
 
 # TODO add a bastion host in each `AZ`
 
+# NOTE Pulumi-generated security groups have no outbound rules, a departure from usual where it's completely open.
 public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
         description = 'HTTP and SSH ingress',
         vpc_id = vpc.id,
@@ -160,11 +161,18 @@ bucket = s3.Bucket(resource_name = 'new-bucket',
 private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
         description = 'bastion host ingress',
         vpc_id = vpc.id,
-        ingress = [
-            # TODO how to get CIDR block from bastion subnet?
-            {'protocol': 'tcp', 'fromPort': 22, 'toPort': 22, 'cidrBlocks': [public_subnet_1.cidr_block]},
-            ],
         tags = {'Name': 'infra private security group (front-rail-back-rail)', 'Creator': 'timc'})
+
+# use an ec2.SecurityGroupRule instead of subnet
+private_sg_in_rule_1 = ec2.SecurityGroupRule(resource_name = 'new-private-sg-in-rule-1',
+        description = 'accept traffic from bastion host',
+        security_group_id = private_sg, # TypeError if not present
+        source_security_group_id = public_sg.id,
+        type = 'ingress',
+        protocol = 'tcp',               # TypeError if not present
+        from_port = '22',               # TypeError if not present
+        to_port = '22',                 # TypeError if not present
+        )
 
 # TODO add ebs_block_devices
 # TODO add volume_tags
