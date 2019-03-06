@@ -2,10 +2,6 @@ import pulumi
 
 from pulumi_aws import ec2, s3
 
-# TODO
-# next indicated actions:
-# * `NAT gateway` to allow the private `EC2` instances to reach outside the VPC
-
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
 #   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
@@ -47,10 +43,10 @@ public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
 
 # TODO does it make sense to have `public_subnet_` in the name of a route
 # table? _Maybe_ just `public_rt` but even that seems a bit overspecified.
+
 public_subnet_rt = ec2.RouteTable(resource_name = 'new-public-subnet-rt',
         vpc_id = vpc.id,
-        routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
-        tags = {'Name': 'infra route table (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public route table (front-rail-back-rail)', 'Creator': 'timc'})
 
 # AWS: source-based routing. To get closer to a specific destination CIDR,
 # forward traffic to corresponding target, e.g.,
@@ -76,13 +72,6 @@ private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
         availability_zone = _availability_zone_1,
         tags = {'Name': 'infra private subnet (front-rail-back-rail)', 'Creator': 'timc'})
 
-# TODO think about this ; come back to it later ; should I split the SGs into
-# public and private too? Why not?
-#
-# Late note: can't ping private IP behind a NAT gateway ; probably need at a
-# minimum to add both instances to a default security group ; may also need to
-# update one or both route tables
-
 # s/public_sg/bastion_sg/g ? s/public_sg/dmz_sg/g ?
 
 # TODO think about a different network layout: `dmz` (public), `app` (private),
@@ -100,7 +89,7 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
             {'protocol': 'tcp', 'fromPort': 80, 'toPort': 80, 'cidrBlocks': ['0.0.0.0/0']},
             ],
         egress = [
-            {'protocol': 'tcp', 'fromPort': 22, 'toPort': 22, 'cidrBlocks': [private_subnet_1.cidr_block]},
+            {'protocol': '-1', 'fromPort': 0, 'toPort': 0, 'cidrBlocks': ['0.0.0.0/0']}
             ],
         tags = {'Name': 'infra public security group (front-rail-back-rail)', 'Creator': 'timc'})
 
@@ -130,6 +119,7 @@ public_server = ec2.Instance(resource_name = 'new-public-ec2',
 eip = ec2.Eip(resource_name = 'new-eip',
         instance = public_server.id,
         associate_with_private_ip = public_server.private_ip,
+        vpc = True,
         tags = {'Name': 'infra eip (front-rail-back-rail)', 'Creator': 'timc'}
         )
 
@@ -139,16 +129,28 @@ eip = ec2.Eip(resource_name = 'new-eip',
 # TODO this needs to go out via NAT gateway
 private_subnet_rt = ec2.RouteTable(resource_name = 'new-private-subnet-rt',
         vpc_id = vpc.id,
-        routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
-        tags = {'Name': 'infra route table (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private route table (front-rail-back-rail)', 'Creator': 'timc'})
+
+nat_eip = ec2.Eip(resource_name = 'new-nat-eip',
+        # not using `associate_with_private_ip` because I don't have access to the private IP
+        vpc = True,
+        tags = {'Name': 'infra nat eip (front-rail-back-rail)', 'Creator': 'timc'}
+        )
+
+nat_gw = ec2.NatGateway(resource_name = 'new-nat-gw',
+        allocation_id = nat_eip.id,
+        subnet_id = public_subnet_1.id,
+        tags = {'Name': 'infra nat gw (front-rail-back-rail)', 'Creator': 'timc'}
+        )
 
 private_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta',
         route_table_id = private_subnet_rt.id,
         subnet_id = private_subnet_1.id)
 
+# TODO remove reference to internet gateway ; can't have two default routes anyway
 private_route = ec2.Route(resource_name = 'new-natgw-route',
         destination_cidr_block = '0.0.0.0/0',
-        gateway_id = igw.id,
+        gateway_id = nat_gw.id,
         route_table_id = private_subnet_rt.id)
 
 # TODO I don't see this tag
@@ -160,6 +162,9 @@ bucket = s3.Bucket(resource_name = 'new-bucket',
 private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
         description = 'bastion host ingress',
         vpc_id = vpc.id,
+        egress = [
+            {'protocol': '-1', 'fromPort': 0, 'toPort': 0, 'cidrBlocks': ['0.0.0.0/0']}
+            ],
         tags = {'Name': 'infra private security group (front-rail-back-rail)', 'Creator': 'timc'})
 
 # use an ec2.SecurityGroupRule instead of subnet
@@ -206,8 +211,10 @@ pulumi.export('[public] routeTableID', public_subnet_rt.id)
 pulumi.export('[public] routeID', public_route.id)
 pulumi.export('[public] AMI', public_server.ami)
 pulumi.export('[public] instanceID', public_server.id)
-pulumi.export('[public] publicIP', public_server.public_ip)
-pulumi.export('[public] privateIP', public_server.private_ip)
+pulumi.export('[public] ec2 publicIP', public_server.public_ip)
+pulumi.export('[public] ec2 privateIP', public_server.private_ip)
+pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
+pulumi.export('[public] nat eip private IP', nat_eip.private_ip)
 
 # stack exports: private
 pulumi.export('[private] securityGroupID', private_sg.id)
@@ -217,6 +224,7 @@ pulumi.export('[private] routeTableID', private_subnet_rt.id)
 pulumi.export('[private] routeID', private_route.id)
 pulumi.export('[private] AMI', private_server.ami)
 pulumi.export('[private] instanceID', private_server.id)
-pulumi.export('[private] publicIP', private_server.public_ip)
-pulumi.export('[private] privateIP', private_server.private_ip)
+pulumi.export('[private] ec2 publicIP', private_server.public_ip)
+pulumi.export('[private] ec2 privateIP', private_server.private_ip)
+pulumi.export('[private] nat gw ID', nat_gw.id)
 
