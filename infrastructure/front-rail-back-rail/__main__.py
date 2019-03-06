@@ -47,7 +47,7 @@ public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
 
 # TODO does it make sense to have `public_subnet_` in the name of a route
 # table? _Maybe_ just `public_rt` but even that seems a bit overspecified.
-public_subnet_rt = ec2.RouteTable('new-public-subnet-rt',
+public_subnet_rt = ec2.RouteTable(resource_name = 'new-public-subnet-rt',
         vpc_id = vpc.id,
         routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
         tags = {'Name': 'infra route table (front-rail-back-rail)', 'Creator': 'timc'})
@@ -61,12 +61,12 @@ public_subnet_rt = ec2.RouteTable('new-public-subnet-rt',
 # 0.0.0.0/0     igw-11aa22bb
 
 # AKA 'new-igw-route'
-public_route = ec2.Route('new-public-route',
+public_route = ec2.Route(resource_name = 'new-public-route',
         destination_cidr_block = '0.0.0.0/0',
         gateway_id = igw.id,
         route_table_id = public_subnet_rt.id)
 
-public_subnet_rta = ec2.RouteTableAssociation('new-public-subnet-rta',
+public_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-public-subnet-rta',
         route_table_id = public_subnet_rt.id,
         subnet_id = public_subnet_1.id)
 
@@ -111,8 +111,7 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
 
 # TODO how to allow access to private instance without copying SSH key to this
 # machine? Looks like I need `SSH agent forwarding`.
-public_server = ec2.Instance(
-        resource_name = 'new-public-ec2',
+public_server = ec2.Instance(resource_name = 'new-public-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         security_groups = [public_sg.id],
@@ -138,16 +137,16 @@ eip = ec2.Eip(resource_name = 'new-eip',
 # MainRouteTableAssociation here. The main route table is sitting idle.
 
 # TODO this needs to go out via NAT gateway
-private_subnet_rt = ec2.RouteTable('new-private-subnet-rt',
+private_subnet_rt = ec2.RouteTable(resource_name = 'new-private-subnet-rt',
         vpc_id = vpc.id,
         routes = [{'gateway_id': igw.id, 'cidr_block': '0.0.0.0/0'}],
         tags = {'Name': 'infra route table (front-rail-back-rail)', 'Creator': 'timc'})
 
-private_subnet_rta = ec2.RouteTableAssociation('new-private-subnet-rta',
+private_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta',
         route_table_id = private_subnet_rt.id,
         subnet_id = private_subnet_1.id)
 
-private_route = ec2.Route('new-natgw-route',
+private_route = ec2.Route(resource_name = 'new-natgw-route',
         destination_cidr_block = '0.0.0.0/0',
         gateway_id = igw.id,
         route_table_id = private_subnet_rt.id)
@@ -179,8 +178,7 @@ private_sg_in_rule_1 = ec2.SecurityGroupRule(resource_name = 'new-private-sg-in-
 # TODO add iam_instance_profile
 # TODO add user_data
 
-private_server = ec2.Instance(
-        resource_name = 'new-private-ec2',
+private_server = ec2.Instance(resource_name = 'new-private-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         security_groups = [private_sg.id],
