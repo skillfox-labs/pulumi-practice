@@ -2,6 +2,10 @@ import pulumi
 
 from pulumi_aws import ec2, s3
 
+#import exports, routes, security_groups, subnets, vpc
+#import routes, security_groups, subnets, vpc
+#import vpc
+
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
 #   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
@@ -17,6 +21,7 @@ _availability_zone_1 = 'us-west-2b'
 #_availability_zone_2 = 'us-west-2c'
 _instance_type = 't2.micro'
 
+# vpc.py
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
         tags = {'Name': 'infra vpc (front-rail-back-rail)', 'Creator': 'timc'})
@@ -25,6 +30,7 @@ igw = ec2.InternetGateway(resource_name = 'new-igw',
         vpc_id = vpc.id,
         tags = {'Name': 'infra internet gateway (front-rail-back-rail)', 'Creator': 'timc'})
 
+# subnets.py
 public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
         vpc_id = vpc.id,
         cidr_block = '10.0.0.0/24',
@@ -44,6 +50,7 @@ public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
 # TODO does it make sense to have `public_subnet_` in the name of a route
 # table? _Maybe_ just `public_rt` but even that seems a bit overspecified.
 
+# routes.py
 public_subnet_rt = ec2.RouteTable(resource_name = 'new-public-subnet-rt',
         vpc_id = vpc.id,
         tags = {'Name': 'infra public route table (front-rail-back-rail)', 'Creator': 'timc'})
@@ -57,15 +64,18 @@ public_subnet_rt = ec2.RouteTable(resource_name = 'new-public-subnet-rt',
 # 0.0.0.0/0     igw-11aa22bb
 
 # AKA 'new-igw-route'
+# routes.py
 public_route = ec2.Route(resource_name = 'new-public-route',
         destination_cidr_block = '0.0.0.0/0',
         gateway_id = igw.id,
         route_table_id = public_subnet_rt.id)
 
+# routes.py
 public_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-public-subnet-rta',
         route_table_id = public_subnet_rt.id,
         subnet_id = public_subnet_1.id)
 
+# subnets.py
 private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
         vpc_id = vpc.id,
         cidr_block = '10.0.1.0/24',
@@ -81,6 +91,7 @@ private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
 # TODO add a bastion host in each `AZ`
 
 # NOTE Pulumi-generated security groups have no outbound rules, a departure from usual where it's completely open.
+# security_groups.py
 public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
         description = 'HTTP and SSH ingress',
         vpc_id = vpc.id,
@@ -127,6 +138,7 @@ eip = ec2.Eip(resource_name = 'new-eip',
 # MainRouteTableAssociation here. The main route table is sitting idle.
 
 # TODO this needs to go out via NAT gateway
+# routes.py
 private_subnet_rt = ec2.RouteTable(resource_name = 'new-private-subnet-rt',
         vpc_id = vpc.id,
         tags = {'Name': 'infra private route table (front-rail-back-rail)', 'Creator': 'timc'})
@@ -143,11 +155,13 @@ nat_gw = ec2.NatGateway(resource_name = 'new-nat-gw',
         tags = {'Name': 'infra nat gw (front-rail-back-rail)', 'Creator': 'timc'}
         )
 
+# routes.py
 private_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta',
         route_table_id = private_subnet_rt.id,
         subnet_id = private_subnet_1.id)
 
 # TODO remove reference to internet gateway ; can't have two default routes anyway
+# routes.py
 private_route = ec2.Route(resource_name = 'new-natgw-route',
         destination_cidr_block = '0.0.0.0/0',
         gateway_id = nat_gw.id,
@@ -159,6 +173,7 @@ bucket = s3.Bucket(resource_name = 'new-bucket',
         tags = {'Name': 'infra bucket (front-rail-back-rail)', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ?
+# security_groups.py
 private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
         description = 'bastion host ingress',
         vpc_id = vpc.id,
@@ -168,6 +183,7 @@ private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
         tags = {'Name': 'infra private security group (front-rail-back-rail)', 'Creator': 'timc'})
 
 # use an ec2.SecurityGroupRule instead of subnet
+# security_groups.py
 private_sg_in_rule_1 = ec2.SecurityGroupRule(resource_name = 'new-private-sg-in-rule-1',
         description = 'accept traffic from bastion host',
         security_group_id = private_sg, # TypeError if not present
