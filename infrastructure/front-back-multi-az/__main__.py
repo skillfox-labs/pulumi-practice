@@ -198,7 +198,7 @@ private_route = ec2.Route(resource_name = 'new-natgw-route',
 # TODO I don't see this tag
 # TODO add VPC endpoint
 bucket = s3.Bucket(resource_name = 'new-bucket',
-        tags = {'Name': 'infra bucket (front-back-multi-az)', 'Creator': 'timc'})
+        tags = {'Name': 'infra bucket front-back-multi-az', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ?
 private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
