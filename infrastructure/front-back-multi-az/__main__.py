@@ -13,6 +13,7 @@ from pulumi_aws import ec2, s3
 # `t2.micro` is an unsupported instance type. So about one time in four, when
 # creating a new stack, Pulumi chooses an AZ and everything fails.
 
+_ami = 'ami-032509850cf9ee54e'
 _az1 = 'us-west-2b'
 _az2 = 'us-west-2c'
 _instance_type = 't2.micro'
@@ -29,6 +30,12 @@ public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
         vpc_id = vpc.id,
         cidr_block = '10.0.0.0/24',
         availability_zone = _az1,
+        tags = {'Name': 'infra public subnet (front-back-multi-az)', 'Creator': 'timc'})
+
+public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
+        vpc_id = vpc.id,
+        cidr_block = '10.0.1.0/24',
+        availability_zone = _az2,
         tags = {'Name': 'infra public subnet (front-back-multi-az)', 'Creator': 'timc'})
 
 # public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
@@ -66,10 +73,16 @@ public_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-public-subnet
         route_table_id = public_subnet_rt.id,
         subnet_id = public_subnet_1.id)
 
-private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
+private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet-1',
         vpc_id = vpc.id,
-        cidr_block = '10.0.1.0/24',
+        cidr_block = '10.0.2.0/24',
         availability_zone = _az1,
+        tags = {'Name': 'infra private subnet (front-back-multi-az)', 'Creator': 'timc'})
+
+private_subnet_2 = ec2.Subnet(resource_name = 'new-private-subnet-2',
+        vpc_id = vpc.id,
+        cidr_block = '10.0.3.0/24',
+        availability_zone = _az2,
         tags = {'Name': 'infra private subnet (front-back-multi-az)', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ? s/public_sg/dmz_sg/g ?
@@ -100,8 +113,9 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
 
 # TODO how to allow access to private instance without copying SSH key to this
 # machine? Looks like I need `SSH agent forwarding`.
-public_server = ec2.Instance(resource_name = 'new-public-ec2',
-        ami = 'ami-032509850cf9ee54e',  # TypeError if not present
+
+public_server_1 = ec2.Instance(resource_name = 'new-public-ec2-1',
+        ami = _ami,                     # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         security_groups = [public_sg.id],
         availability_zone = _az1,
@@ -111,16 +125,40 @@ public_server = ec2.Instance(resource_name = 'new-public-ec2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra public ec2 (front-back-multi-az)', 'Creator': 'timc'}
+        tags = {'Name': 'infra public ec2 1 (front-back-multi-az)', 'Creator': 'timc'}
+        )
+
+public_server_2 = ec2.Instance(resource_name = 'new-public-ec2-2',
+        ami = _ami,                     # TypeError if not present
+        instance_type = _instance_type, # TypeError if not present
+        security_groups = [public_sg.id],
+        availability_zone = _az2,
+        subnet_id = public_subnet_2.id,
+        associate_public_ip_address = False,
+        key_name = 'sl-us-west-2',
+
+        # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
+        #   edit: I also changed the instance's `resource_name`
+        tags = {'Name': 'infra public ec2 2 (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 # TODO bug? If you include `associate_with_private_ip = server.private_ip` but
 # leave off `instance = server.id`, the association is not created
-eip = ec2.Eip(resource_name = 'new-eip',
-        instance = public_server.id,
-        associate_with_private_ip = public_server.private_ip,
+
+# TODO move this to ALB when the time comes
+eip_1 = ec2.Eip(resource_name = 'new-eip-1',
+        instance = public_server_1.id,
+        associate_with_private_ip = public_server_1.private_ip,
         vpc = True,
-        tags = {'Name': 'infra eip (front-back-multi-az)', 'Creator': 'timc'}
+        tags = {'Name': 'infra eip 1 (front-back-multi-az)', 'Creator': 'timc'}
+        )
+
+# TODO move this to ALB when the time comes
+eip_2 = ec2.Eip(resource_name = 'new-eip-2',
+        instance = public_server_2.id,
+        associate_with_private_ip = public_server_2.private_ip,
+        vpc = True,
+        tags = {'Name': 'infra eip 2 (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 # AWS: Maybe I should drop the route definition above, and use a
@@ -143,9 +181,13 @@ nat_gw = ec2.NatGateway(resource_name = 'new-nat-gw',
         tags = {'Name': 'infra nat gw (front-back-multi-az)', 'Creator': 'timc'}
         )
 
-private_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta',
+private_subnet_rta_1 = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta-1',
         route_table_id = private_subnet_rt.id,
         subnet_id = private_subnet_1.id)
+
+private_subnet_rta_2 = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta-2',
+        route_table_id = private_subnet_rt.id,
+        subnet_id = private_subnet_2.id)
 
 # TODO remove reference to internet gateway ; can't have two default routes anyway
 private_route = ec2.Route(resource_name = 'new-natgw-route',
@@ -183,8 +225,8 @@ private_sg_in_rule_1 = ec2.SecurityGroupRule(resource_name = 'new-private-sg-in-
 # TODO add iam_instance_profile
 # TODO add user_data
 
-private_server = ec2.Instance(resource_name = 'new-private-ec2',
-        ami = 'ami-032509850cf9ee54e',  # TypeError if not present
+private_server_1 = ec2.Instance(resource_name = 'new-private-ec2-1',
+        ami = _ami,                     # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         security_groups = [private_sg.id],
         availability_zone = _az1,
@@ -194,14 +236,30 @@ private_server = ec2.Instance(resource_name = 'new-private-ec2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra private ec2 (front-back-multi-az)', 'Creator': 'timc'}
+        tags = {'Name': 'infra private ec2 1 (front-back-multi-az)', 'Creator': 'timc'}
+        )
+
+private_server_2 = ec2.Instance(resource_name = 'new-private-ec2-2',
+        ami = _ami,                     # TypeError if not present
+        instance_type = _instance_type, # TypeError if not present
+        security_groups = [private_sg.id],
+        availability_zone = _az2,
+        subnet_id = private_subnet_2.id,
+        associate_public_ip_address = False,
+        key_name = 'sl-us-west-2',
+
+        # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
+        #   edit: I also changed the instance's `resource_name`
+        tags = {'Name': 'infra private ec2 2 (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 # stack exports: shared
 pulumi.export('vpcID', vpc.id)
 pulumi.export('internetGatewayID', igw.id)
 pulumi.export('bucket_name',  bucket.bucket_domain_name)
-pulumi.export('elasticIP', eip.public_ip)
+pulumi.export('elasticIP 1', eip_1.public_ip)
+pulumi.export('elasticIP 2', eip_2.public_ip)
+pulumi.export('[public] AMI', _ami)
 
 # stack exports: public
 pulumi.export('[public] securityGroupID', public_sg.id)
@@ -209,10 +267,13 @@ pulumi.export('[public] subnetID', public_subnet_1.id)
 pulumi.export('[public] subnet CIDR block', public_subnet_1.cidr_block)
 pulumi.export('[public] routeTableID', public_subnet_rt.id)
 pulumi.export('[public] routeID', public_route.id)
-pulumi.export('[public] AMI', public_server.ami)
-pulumi.export('[public] instanceID', public_server.id)
-pulumi.export('[public] ec2 publicIP', public_server.public_ip)
-pulumi.export('[public] ec2 privateIP', public_server.private_ip)
+pulumi.export('[public] AMI', _ami)
+pulumi.export('[public] instanceID', public_server_1.id)
+pulumi.export('[public] instanceID', public_server_2.id)
+pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)
+pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
+pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)
+pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
 pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
 pulumi.export('[public] nat eip private IP', nat_eip.private_ip)
 
@@ -222,9 +283,12 @@ pulumi.export('[private] subnetID', private_subnet_1.id)
 pulumi.export('[private] subnet CIDR block', private_subnet_1.cidr_block)
 pulumi.export('[private] routeTableID', private_subnet_rt.id)
 pulumi.export('[private] routeID', private_route.id)
-pulumi.export('[private] AMI', private_server.ami)
-pulumi.export('[private] instanceID', private_server.id)
-pulumi.export('[private] ec2 publicIP', private_server.public_ip)
-pulumi.export('[private] ec2 privateIP', private_server.private_ip)
+#pulumi.export('[private] AMI', private_server.ami)
+pulumi.export('[private] instanceID', private_server_1.id)
+pulumi.export('[private] instanceID', private_server_2.id)
+pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)
+pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
+pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)
+pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
 pulumi.export('[private] nat gw ID', nat_gw.id)
 
