@@ -259,42 +259,39 @@ private_server_2 = ec2.Instance(resource_name = 'new-private-ec2-2',
         )
 
 # stack exports: shared
-pulumi.export('vpcID', vpc.id)                                              #
-pulumi.export('internetGatewayID', igw.id)                                  #
-pulumi.export('bucket_name',  bucket.bucket_domain_name)                    #
-pulumi.export('elasticIP 1', eip_1.public_ip)                               #
-pulumi.export('elasticIP 2', eip_2.public_ip)                               #
+pulumi.export('vpcID', vpc.id)
+pulumi.export('internetGatewayID', igw.id)
+pulumi.export('bucket_name',  bucket.bucket_domain_name)
+pulumi.export('elasticIP 1', eip_1.public_ip)
+pulumi.export('elasticIP 2', eip_2.public_ip)
 pulumi.export('[public] AMI', _ami)
-pulumi.export('[public ] nat gw ID', nat_gw.id)                             #
-pulumi.export('[public] nat eip public IP', nat_eip.public_ip)              #
-#pulumi.export('[public] nat eip private IP', nat_eip.private_ip)            #
+pulumi.export('[public ] nat gw ID', nat_gw.id)
+pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
 
 # stack exports: public
-pulumi.export('[public] securityGroupID', public_sg.id)                     #
-pulumi.export('[public] subnetID 1', public_subnet_1.id)                    #
-pulumi.export('[public] subnetID 2', public_subnet_2.id)                    #
-pulumi.export('[public] subnet CIDR block', public_subnet_1.cidr_block)     #
-pulumi.export('[public] routeTableID', public_subnet_rt.id)                 #
-pulumi.export('[public] routeID', public_route.id)                          #
+pulumi.export('[public] securityGroupID', public_sg.id)
+pulumi.export('[public] subnetID 1', public_subnet_1.id)
+pulumi.export('[public] subnetID 2', public_subnet_2.id)
+pulumi.export('[public] subnet CIDR block', public_subnet_1.cidr_block)
+pulumi.export('[public] routeTableID', public_subnet_rt.id)
+pulumi.export('[public] routeID', public_route.id)
 pulumi.export('[public] AMI', _ami)
-pulumi.export('[public] instanceID', public_server_1.id)                    #
-pulumi.export('[public] instanceID', public_server_2.id)                    #
-#pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)         #
-pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)       #
-pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)         #
-pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)       #
+pulumi.export('[public] instanceID', public_server_1.id)
+pulumi.export('[public] instanceID', public_server_2.id)
+pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
+pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)
+pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
 
 # stack exports: private
-pulumi.export('[private] securityGroupID', private_sg.id)                   #
-pulumi.export('[private] subnetID 1', private_subnet_1.id)                  #
-pulumi.export('[private] subnetID 2', private_subnet_2.id)                  #
-pulumi.export('[private] subnet CIDR block', private_subnet_1.cidr_block)   #
-pulumi.export('[private] routeTableID', private_subnet_rt.id)               #
-pulumi.export('[private] routeID', private_route.id)                        #
-pulumi.export('[private] instanceID', private_server_1.id)                  #
-pulumi.export('[private] instanceID', private_server_2.id)                  #
-pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)       #
-pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)     #
-#pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)       #
-pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)     #
+pulumi.export('[private] securityGroupID', private_sg.id)
+pulumi.export('[private] subnetID 1', private_subnet_1.id)
+pulumi.export('[private] subnetID 2', private_subnet_2.id)
+pulumi.export('[private] subnet CIDR block', private_subnet_1.cidr_block)
+pulumi.export('[private] routeTableID', private_subnet_rt.id)
+pulumi.export('[private] routeID', private_route.id)
+pulumi.export('[private] instanceID', private_server_1.id)
+pulumi.export('[private] instanceID', private_server_2.id)
+pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)
+pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
+pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
 
