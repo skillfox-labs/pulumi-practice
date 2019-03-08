@@ -19,17 +19,17 @@ _instance_type = 't2.micro'
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
-        tags = {'Name': 'infra vpc (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra vpc (front-back-multi-az)', 'Creator': 'timc'})
 
 igw = ec2.InternetGateway(resource_name = 'new-igw',
         vpc_id = vpc.id,
-        tags = {'Name': 'infra internet gateway (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra internet gateway (front-back-multi-az)', 'Creator': 'timc'})
 
 public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
         vpc_id = vpc.id,
         cidr_block = '10.0.0.0/24',
         availability_zone = _availability_zone_1,
-        tags = {'Name': 'infra public subnet (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public subnet (front-back-multi-az)', 'Creator': 'timc'})
 
 # public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
 # [...]
@@ -46,7 +46,7 @@ public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
 
 public_subnet_rt = ec2.RouteTable(resource_name = 'new-public-subnet-rt',
         vpc_id = vpc.id,
-        tags = {'Name': 'infra public route table (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public route table (front-back-multi-az)', 'Creator': 'timc'})
 
 # AWS: source-based routing. To get closer to a specific destination CIDR,
 # forward traffic to corresponding target, e.g.,
@@ -70,7 +70,7 @@ private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
         vpc_id = vpc.id,
         cidr_block = '10.0.1.0/24',
         availability_zone = _availability_zone_1,
-        tags = {'Name': 'infra private subnet (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private subnet (front-back-multi-az)', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ? s/public_sg/dmz_sg/g ?
 
@@ -91,7 +91,7 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
         egress = [
             {'protocol': '-1', 'fromPort': 0, 'toPort': 0, 'cidrBlocks': ['0.0.0.0/0']}
             ],
-        tags = {'Name': 'infra public security group (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public security group (front-back-multi-az)', 'Creator': 'timc'})
 
 # TODO add ebs_block_devices
 # TODO add volume_tags
@@ -111,7 +111,7 @@ public_server = ec2.Instance(resource_name = 'new-public-ec2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra public ec2 (front-rail-back-rail)', 'Creator': 'timc'}
+        tags = {'Name': 'infra public ec2 (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 # TODO bug? If you include `associate_with_private_ip = server.private_ip` but
@@ -120,7 +120,7 @@ eip = ec2.Eip(resource_name = 'new-eip',
         instance = public_server.id,
         associate_with_private_ip = public_server.private_ip,
         vpc = True,
-        tags = {'Name': 'infra eip (front-rail-back-rail)', 'Creator': 'timc'}
+        tags = {'Name': 'infra eip (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 # AWS: Maybe I should drop the route definition above, and use a
@@ -129,18 +129,18 @@ eip = ec2.Eip(resource_name = 'new-eip',
 # TODO this needs to go out via NAT gateway
 private_subnet_rt = ec2.RouteTable(resource_name = 'new-private-subnet-rt',
         vpc_id = vpc.id,
-        tags = {'Name': 'infra private route table (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private route table (front-back-multi-az)', 'Creator': 'timc'})
 
 nat_eip = ec2.Eip(resource_name = 'new-nat-eip',
         # not using `associate_with_private_ip` because I don't have access to the private IP
         vpc = True,
-        tags = {'Name': 'infra nat eip (front-rail-back-rail)', 'Creator': 'timc'}
+        tags = {'Name': 'infra nat eip (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 nat_gw = ec2.NatGateway(resource_name = 'new-nat-gw',
         allocation_id = nat_eip.id,
         subnet_id = public_subnet_1.id,
-        tags = {'Name': 'infra nat gw (front-rail-back-rail)', 'Creator': 'timc'}
+        tags = {'Name': 'infra nat gw (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 private_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta',
@@ -156,7 +156,7 @@ private_route = ec2.Route(resource_name = 'new-natgw-route',
 # TODO I don't see this tag
 # TODO add VPC endpoint
 bucket = s3.Bucket(resource_name = 'new-bucket',
-        tags = {'Name': 'infra bucket (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra bucket (front-back-multi-az)', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ?
 private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
@@ -165,7 +165,7 @@ private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
         egress = [
             {'protocol': '-1', 'fromPort': 0, 'toPort': 0, 'cidrBlocks': ['0.0.0.0/0']}
             ],
-        tags = {'Name': 'infra private security group (front-rail-back-rail)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private security group (front-back-multi-az)', 'Creator': 'timc'})
 
 # use an ec2.SecurityGroupRule instead of subnet
 private_sg_in_rule_1 = ec2.SecurityGroupRule(resource_name = 'new-private-sg-in-rule-1',
@@ -194,7 +194,7 @@ private_server = ec2.Instance(resource_name = 'new-private-ec2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra private ec2 (front-rail-back-rail)', 'Creator': 'timc'}
+        tags = {'Name': 'infra private ec2 (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 # stack exports: shared
