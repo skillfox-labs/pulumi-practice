@@ -13,8 +13,8 @@ from pulumi_aws import ec2, s3
 # `t2.micro` is an unsupported instance type. So about one time in four, when
 # creating a new stack, Pulumi chooses an AZ and everything fails.
 
-_availability_zone_1 = 'us-west-2b'
-#_availability_zone_2 = 'us-west-2c'
+_az1 = 'us-west-2b'
+_az2 = 'us-west-2c'
 _instance_type = 't2.micro'
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
@@ -28,7 +28,7 @@ igw = ec2.InternetGateway(resource_name = 'new-igw',
 public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
         vpc_id = vpc.id,
         cidr_block = '10.0.0.0/24',
-        availability_zone = _availability_zone_1,
+        availability_zone = _az1,
         tags = {'Name': 'infra public subnet (front-back-multi-az)', 'Creator': 'timc'})
 
 # public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
@@ -69,7 +69,7 @@ public_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-public-subnet
 private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet',
         vpc_id = vpc.id,
         cidr_block = '10.0.1.0/24',
-        availability_zone = _availability_zone_1,
+        availability_zone = _az1,
         tags = {'Name': 'infra private subnet (front-back-multi-az)', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ? s/public_sg/dmz_sg/g ?
@@ -104,7 +104,7 @@ public_server = ec2.Instance(resource_name = 'new-public-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         security_groups = [public_sg.id],
-        availability_zone = _availability_zone_1,
+        availability_zone = _az1,
         subnet_id = public_subnet_1.id,
         associate_public_ip_address = False,
         key_name = 'sl-us-west-2',
@@ -187,7 +187,7 @@ private_server = ec2.Instance(resource_name = 'new-private-ec2',
         ami = 'ami-032509850cf9ee54e',  # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         security_groups = [private_sg.id],
-        availability_zone = _availability_zone_1,
+        availability_zone = _az1,
         subnet_id = private_subnet_1.id,
         associate_public_ip_address = False,
         key_name = 'sl-us-west-2',
