@@ -13,6 +13,14 @@ from pulumi_aws import ec2, s3
 # `t2.micro` is an unsupported instance type. So about one time in four, when
 # creating a new stack, Pulumi chooses an AZ and everything fails.
 
+# TODO investigate creating modules with functions or classes, and split things
+# by type (gateways, subnets, routes+route tables, etc.). Not sure it would
+# work, but there's got to be a way to break this up.
+
+# TODO find or create an AMI chooser, given a region and instance type
+
+# TODO create a config file
+
 _ami = 'ami-032509850cf9ee54e'
 _az1 = 'us-west-2b'
 _az2 = 'us-west-2c'
@@ -37,9 +45,6 @@ public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
         cidr_block = '10.0.1.0/24',
         availability_zone = _az2,
         tags = {'Name': 'infra public subnet (front-back-multi-az)', 'Creator': 'timc'})
-
-# public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
-# [...]
 
 # https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes
 # FIXED! s/destination_cidr_block/cidr_block/g
@@ -254,41 +259,42 @@ private_server_2 = ec2.Instance(resource_name = 'new-private-ec2-2',
         )
 
 # stack exports: shared
-pulumi.export('vpcID', vpc.id)
-pulumi.export('internetGatewayID', igw.id)
-pulumi.export('bucket_name',  bucket.bucket_domain_name)
-pulumi.export('elasticIP 1', eip_1.public_ip)
-pulumi.export('elasticIP 2', eip_2.public_ip)
+pulumi.export('vpcID', vpc.id)                                              #
+pulumi.export('internetGatewayID', igw.id)                                  #
+pulumi.export('bucket_name',  bucket.bucket_domain_name)                    #
+pulumi.export('elasticIP 1', eip_1.public_ip)                               #
+pulumi.export('elasticIP 2', eip_2.public_ip)                               #
 pulumi.export('[public] AMI', _ami)
+pulumi.export('[public ] nat gw ID', nat_gw.id)                             #
+pulumi.export('[public] nat eip public IP', nat_eip.public_ip)              #
+#pulumi.export('[public] nat eip private IP', nat_eip.private_ip)            #
 
 # stack exports: public
-pulumi.export('[public] securityGroupID', public_sg.id)
-pulumi.export('[public] subnetID', public_subnet_1.id)
-pulumi.export('[public] subnet CIDR block', public_subnet_1.cidr_block)
-pulumi.export('[public] routeTableID', public_subnet_rt.id)
-pulumi.export('[public] routeID', public_route.id)
+pulumi.export('[public] securityGroupID', public_sg.id)                     #
+pulumi.export('[public] subnetID 1', public_subnet_1.id)                    #
+pulumi.export('[public] subnetID 2', public_subnet_2.id)                    #
+pulumi.export('[public] subnet CIDR block', public_subnet_1.cidr_block)     #
+pulumi.export('[public] routeTableID', public_subnet_rt.id)                 #
+pulumi.export('[public] routeID', public_route.id)                          #
 pulumi.export('[public] AMI', _ami)
-pulumi.export('[public] instanceID', public_server_1.id)
-pulumi.export('[public] instanceID', public_server_2.id)
-pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)
-pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
-pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)
-pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
-pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
-pulumi.export('[public] nat eip private IP', nat_eip.private_ip)
+pulumi.export('[public] instanceID', public_server_1.id)                    #
+pulumi.export('[public] instanceID', public_server_2.id)                    #
+#pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)         #
+pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)       #
+pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)         #
+pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)       #
 
 # stack exports: private
-pulumi.export('[private] securityGroupID', private_sg.id)
-pulumi.export('[private] subnetID', private_subnet_1.id)
-pulumi.export('[private] subnet CIDR block', private_subnet_1.cidr_block)
-pulumi.export('[private] routeTableID', private_subnet_rt.id)
-pulumi.export('[private] routeID', private_route.id)
-#pulumi.export('[private] AMI', private_server.ami)
-pulumi.export('[private] instanceID', private_server_1.id)
-pulumi.export('[private] instanceID', private_server_2.id)
-pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)
-pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
-pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)
-pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
-pulumi.export('[private] nat gw ID', nat_gw.id)
+pulumi.export('[private] securityGroupID', private_sg.id)                   #
+pulumi.export('[private] subnetID 1', private_subnet_1.id)                  #
+pulumi.export('[private] subnetID 2', private_subnet_2.id)                  #
+pulumi.export('[private] subnet CIDR block', private_subnet_1.cidr_block)   #
+pulumi.export('[private] routeTableID', private_subnet_rt.id)               #
+pulumi.export('[private] routeID', private_route.id)                        #
+pulumi.export('[private] instanceID', private_server_1.id)                  #
+pulumi.export('[private] instanceID', private_server_2.id)                  #
+pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)       #
+pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)     #
+#pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)       #
+pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)     #
 
