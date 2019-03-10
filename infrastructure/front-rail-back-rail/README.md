@@ -1,4 +1,4 @@
-# VPC with EC2
+# Front rail, back rail
 
 ## Setting up a Python virtual environment
 
@@ -6,7 +6,7 @@ Get where you want to work
 
 <!-- tokenize? -->
 
-> ➜  cd infrastructure/vpc-with-ec2/
+> ➜  cd infrastructure/front-rail-back-rail/
 
 <!-- pip install -r requirements.txt ? -->
 
