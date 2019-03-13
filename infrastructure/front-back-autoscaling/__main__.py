@@ -1,6 +1,6 @@
 import pulumi
 
-from pulumi_aws import ec2, s3
+from pulumi_aws import autoscaling, ec2, s3
 
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
@@ -265,7 +265,6 @@ launch_config = ec2.LaunchConfiguration(resource_name = 'new-launch-configuratio
         associate_public_ip_address = True, # temporary
         key_name = _key_name,
         security_groups = [public_sg.id],
-        tags = {'Name': 'infra launch config (front-back-multi-az)', 'Creator': 'timc'}
 
         #   enable_monitoring=None,
         #   iam_instance_profile=None,
@@ -273,11 +272,17 @@ launch_config = ec2.LaunchConfiguration(resource_name = 'new-launch-configuratio
         #   user_data=None,
         )
 
-autoscaling_group_1 = autoscaling.Group(resource_name = 'new-autoscaling-group',
+autoscaling_group_1 = autoscaling.Group(resource_name = 'new-autoscaling-group-1',
         availability_zones = [_az1, _az2],
         launch_configuration = launch_config,
+        min_size = 1,
         max_size = 4,
-        tags = {'Name': 'infra autoscaling group 1 (front-back-multi-az)', 'Creator': 'timc'}
+        vpc_zone_identifiers = [public_subnet_1, public_subnet_2],
+        tags = [{
+            'key': 'Name',
+            'value': 'infra autoscaling group 1 (front-back-multi-az)',
+            'propagate_at_launch': True,
+            }]
         )
 
 launch_template = ec2.LaunchTemplate(resource_name = 'new-launch-template',
