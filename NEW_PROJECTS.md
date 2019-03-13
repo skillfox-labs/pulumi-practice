@@ -23,13 +23,15 @@ Each subdirectory is intended to hold a single self-contained Pulumi project. It
         * NB: Pulumi will complain about a non-empty subdirectory if you create the virtual environment first.
     * `python3 -m venv venv`
     * `source venv/bin/activate`
+    * `pip install --upgrade pip`
+    * `pip install -r requirements.txt`
+
     * Consider running `pulumi up` before going on.
         * It'll create a stack and a bucket.
         * Don't forget `pulumi destroy`
     * `git checkout -b ${subdirectory-name}`
     * `git add .gitignore Pulumi.dev.yaml Pulumi.yaml __main__.py requirements.txt`
         * Or whatever is the current set of generated files at the time.
-        * Commit the generated files before making changes.
     * `git commit -m "Add Pulumi Python project ${project-name}"`
         * Swap in `${project-name}`
         * Consider using `git commit` and adding some color to the commit.
@@ -41,7 +43,6 @@ Each subdirectory is intended to hold a single self-contained Pulumi project. It
     gateway. May add autoscaling to instances in both subnets.
     ```
 
-    * `pip install -r requirements.txt`
     * `git push [-u] origin ${project-name}`
     * Consider copying the `__main__.py` or other source files from another project subdirectory.
         * If so, commit it before editing. Use a commit message like this.
