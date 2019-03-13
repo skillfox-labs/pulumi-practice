@@ -288,28 +288,33 @@ autoscaling_group_1 = autoscaling.Group(resource_name = 'new-autoscaling-group-1
             }],
         )
 
-launch_template = ec2.LaunchTemplate(resource_name = 'new-launch-template',
-        image_id = _ami,                # TypeError if not present
-        instance_type = _instance_type, # TypeError if not present
-        key_name = _key_name,
-        vpc_security_group_ids = [public_sg.id],
-        tags = {'Name': 'infra launch template (front-back-autoscaling)', 'Creator': 'timc'}
+# https://github.com/pulumi/terraform-provider-aws/blob/d832bde0f617e0666cf932807a29cb5111baee78/website/docs/r/autoscaling_group.html.markdown#launch_template
 
-        #   security_group_names=None,
-        #   iam_instance_profile=None,
-        #   monitoring=None,
-        #   tag_specifications=None,
-        #   tags=None,
-        #   user_data=None,
-        #   vpc_security_group_ids=None,
-        )
-
-autoscaling_group_2 = autoscaling.Group(resource_name = 'new-autoscaling-group',
-        availability_zones = [_az1, _az2],
-        launch_template = launch_template,
-        max_size = 4,
-        tags = {'Name': 'infra autoscaling group 2 (front-back-multi-az)', 'Creator': 'timc'}
-        )
+#launch_template = ec2.LaunchTemplate(resource_name = 'new-launch-template',
+#        image_id = _ami,                # TypeError if not present
+#        instance_type = _instance_type, # TypeError if not present
+#        key_name = _key_name,
+#        vpc_security_group_ids = [public_sg.id],
+#        tags = [{
+#            'Name': 'infra launch template (front-back-autoscaling)',
+#            'Creator': 'timc',
+#        }],
+#        )
+#
+#autoscaling_group_2 = autoscaling.Group(resource_name = 'new-autoscaling-group-2',
+#        #launch_template = launch_template,
+#        launch_template = launch_template.id,
+#        availability_zones = [_az1, _az2],
+#        min_size = 1,
+#        max_size = 4,
+#        desired_capacity = 1,
+#        vpc_zone_identifiers = [public_subnet_1, public_subnet_2],
+#        tags = [{
+#            'key': 'Name',
+#            'value': 'infra autoscaling group 2 (front-back-autoscaling)',
+#            'propagate_at_launch': True,
+#            }]
+#        )
 
 # stack exports: shared
 pulumi.export('vpcID', vpc.id)
@@ -321,7 +326,7 @@ pulumi.export('[public] AMI', _ami)
 pulumi.export('[public ] nat gw ID', nat_gw.id)
 pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
 pulumi.export('launch config', launch_config),
-pulumi.export('launch template', launch_template),
+#pulumi.export('launch template', launch_template),
 
 # stack exports: public
 pulumi.export('[public] securityGroupID', public_sg.id)
