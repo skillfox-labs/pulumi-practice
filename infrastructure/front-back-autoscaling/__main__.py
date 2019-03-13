@@ -2,6 +2,8 @@ import pulumi
 
 from pulumi_aws import autoscaling, ec2, s3
 
+# TODO investigate and probably use `black`
+
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
 #   edit: unsupported feature on the AWS side
 #   edit: maybe a Pulumi usability bug? This will cause occasional failures if not explicit
@@ -277,12 +279,13 @@ autoscaling_group_1 = autoscaling.Group(resource_name = 'new-autoscaling-group-1
         launch_configuration = launch_config,
         min_size = 1,
         max_size = 4,
+        desired_capacity = 1,
         vpc_zone_identifiers = [public_subnet_1, public_subnet_2],
         tags = [{
             'key': 'Name',
             'value': 'infra autoscaling group 1 (front-back-autoscaling)',
             'propagate_at_launch': True,
-            }]
+            }],
         )
 
 launch_template = ec2.LaunchTemplate(resource_name = 'new-launch-template',
