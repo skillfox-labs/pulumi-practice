@@ -317,42 +317,39 @@ launch_template = ec2.LaunchTemplate('new-launch-template',
 #        )
 
 # stack exports: shared
-pulumi.export('vpcID', vpc.id)
-pulumi.export('internetGatewayID', igw.id)
-pulumi.export('bucket_name',  bucket.bucket_domain_name)
-pulumi.export('elasticIP 1', eip_1.public_ip)
-pulumi.export('elasticIP 2', eip_2.public_ip)
-pulumi.export('[public] AMI', _ami)
-pulumi.export('[public ] nat gw ID', nat_gw.id)
-pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
-pulumi.export('launch config', launch_config),
-pulumi.export('launch template', launch_template.id),
-#pulumi.export('autoscaling group 2', autoscaling_group_2.id),
+pulumi.export('vpc-id', vpc.id)
+pulumi.export('internet-gateway-id', igw.id)
+pulumi.export('bucket-name', bucket.bucket_domain_name)
+pulumi.export('elastic-ip-1', eip_1.public_ip)
+pulumi.export('elastic-ip-2', eip_2.public_ip)
+pulumi.export('ami-id', _ami)
+pulumi.export('nat-gw-id', nat_gw.id)
+pulumi.export('nat-eip-public-ip', nat_eip.public_ip)
+pulumi.export('launch-config', launch_config),
+pulumi.export('launch-template', launch_template.id),
+#pulumi.export('autoscaling-group-2', autoscaling_group_2.id),
 
 # stack exports: public
-pulumi.export('[public] securityGroupID', public_sg.id)
-pulumi.export('[public] subnetID 1', public_subnet_1.id)
-pulumi.export('[public] subnetID 2', public_subnet_2.id)
-pulumi.export('[public] subnet CIDR block', public_subnet_1.cidr_block)
-pulumi.export('[public] routeTableID', public_subnet_rt.id)
-pulumi.export('[public] routeID', public_route.id)
-pulumi.export('[public] AMI', _ami)
-pulumi.export('[public] instanceID', public_server_1.id)
-pulumi.export('[public] instanceID', public_server_2.id)
-pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
-pulumi.export('[public] ec2 publicIP 1', public_server_1.public_ip)
-pulumi.export('[public] ec2 privateIP 2', public_server_2.private_ip)
+pulumi.export('public-security-group-id', public_sg.id)
+pulumi.export('public-subnet-1-id', public_subnet_1.id)
+pulumi.export('public-subnet-2-id', public_subnet_2.id)
+pulumi.export('public-subnet-1-cidr-block', public_subnet_1.cidr_block)
+pulumi.export('public-route-table-id', public_subnet_rt.id)
+pulumi.export('public-route-id', public_route.id)
+pulumi.export('public-ec2-1-instance-id', public_server_1.id)
+pulumi.export('public-ec2-1-public-ip', public_server_1.public_ip)
+pulumi.export('public-ec2-2-instance-id', public_server_2.id)
+pulumi.export('public-ec2-2-private-ip', public_server_2.private_ip)
 
 # stack exports: private
-pulumi.export('[private] securityGroupID', private_sg.id)
-pulumi.export('[private] subnetID 1', private_subnet_1.id)
-pulumi.export('[private] subnetID 2', private_subnet_2.id)
-pulumi.export('[private] subnet CIDR block', private_subnet_1.cidr_block)
-pulumi.export('[private] routeTableID', private_subnet_rt.id)
-pulumi.export('[private] routeID', private_route.id)
-pulumi.export('[private] instanceID', private_server_1.id)
-pulumi.export('[private] instanceID', private_server_2.id)
-pulumi.export('[private] ec2 publicIP 1', private_server_1.public_ip)
-pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
-pulumi.export('[private] ec2 privateIP 2', private_server_2.private_ip)
+pulumi.export('private-security-group-id', private_sg.id)
+pulumi.export('private-subnet-1-id', private_subnet_1.id)
+pulumi.export('private-subnet-2-id', private_subnet_2.id)
+pulumi.export('private-subnet-1-cidr-block', private_subnet_1.cidr_block)
+pulumi.export('private-route-table-id', private_subnet_rt.id)
+pulumi.export('private-route-id', private_route.id)
+pulumi.export('private-ec2-1-instance-id', private_server_1.id)
+pulumi.export('private-ec2-1-public-ip', private_server_1.public_ip)
+pulumi.export('private-ec2-2-instance-id', private_server_2.id)
+pulumi.export('private-ec2-2-private-ip', private_server_2.private_ip)
 
