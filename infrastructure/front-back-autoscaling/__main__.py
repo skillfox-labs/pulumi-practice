@@ -265,6 +265,7 @@ launch_config = ec2.LaunchConfiguration(resource_name = 'new-launch-configuratio
         associate_public_ip_address = True, # temporary
         key_name = _key_name,
         security_groups = [public_sg.id],
+        tags = {'Name': 'infra launch config (front-back-multi-az)', 'Creator': 'timc'}
 
         #   enable_monitoring=None,
         #   iam_instance_profile=None,
@@ -272,11 +273,19 @@ launch_config = ec2.LaunchConfiguration(resource_name = 'new-launch-configuratio
         #   user_data=None,
         )
 
+autoscaling_group_1 = autoscaling.Group(resource_name = 'new-autoscaling-group',
+        availability_zones = [_az1, _az2],
+        launch_configuration = launch_config,
+        max_size = 4,
+        tags = {'Name': 'infra autoscaling group 1 (front-back-multi-az)', 'Creator': 'timc'}
+        )
+
 launch_template = ec2.LaunchTemplate(resource_name = 'new-launch-template',
         image_id = _ami,                # TypeError if not present
         instance_type = _instance_type, # TypeError if not present
         key_name = _key_name,
         vpc_security_group_ids = [public_sg.id],
+        tags = {'Name': 'infra launch template (front-back-multi-az)', 'Creator': 'timc'}
 
         #   security_group_names=None,
         #   iam_instance_profile=None,
@@ -285,6 +294,13 @@ launch_template = ec2.LaunchTemplate(resource_name = 'new-launch-template',
         #   tags=None,
         #   user_data=None,
         #   vpc_security_group_ids=None,
+        )
+
+autoscaling_group_2 = autoscaling.Group(resource_name = 'new-autoscaling-group',
+        availability_zones = [_az1, _az2],
+        launch_template = launch_template,
+        max_size = 4,
+        tags = {'Name': 'infra autoscaling group 2 (front-back-multi-az)', 'Creator': 'timc'}
         )
 
 # stack exports: shared
