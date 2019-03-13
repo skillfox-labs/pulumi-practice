@@ -301,20 +301,20 @@ launch_template = ec2.LaunchTemplate('new-launch-template',
             }],
         )
 
-autoscaling_group_2 = autoscaling.Group('new-autoscaling-group-2',
-        launch_template = {'name': launch_template},
-        #launch_template = lt.id,
-        availability_zones = [_az1, _az2],
-        min_size = 1,
-        max_size = 4,
-        desired_capacity = 1,
-        vpc_zone_identifiers = [public_subnet_1, public_subnet_2],
-        tags = [{
-            'key': 'Name',
-            'value': 'infra autoscaling group 2 (front-back-autoscaling)',
-            'propagate_at_launch': True,
-            }]
-        )
+#autoscaling_group_2 = autoscaling.Group('new-autoscaling-group-2',
+#        launch_template = {'name': launch_template},
+#        #launch_template = lt.id,
+#        availability_zones = [_az1, _az2],
+#        min_size = 1,
+#        max_size = 4,
+#        desired_capacity = 1,
+#        vpc_zone_identifiers = [public_subnet_1, public_subnet_2],
+#        tags = [{
+#            'key': 'Name',
+#            'value': 'infra autoscaling group 2 (front-back-autoscaling)',
+#            'propagate_at_launch': True,
+#            }]
+#        )
 
 # stack exports: shared
 pulumi.export('vpcID', vpc.id)
@@ -327,7 +327,7 @@ pulumi.export('[public ] nat gw ID', nat_gw.id)
 pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
 pulumi.export('launch config', launch_config),
 pulumi.export('launch template', launch_template.id),
-pulumi.export('autoscaling group 2', autoscaling_group_2.id),
+#pulumi.export('autoscaling group 2', autoscaling_group_2.id),
 
 # stack exports: public
 pulumi.export('[public] securityGroupID', public_sg.id)
