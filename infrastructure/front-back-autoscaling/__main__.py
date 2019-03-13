@@ -25,6 +25,7 @@ _ami = 'ami-032509850cf9ee54e'
 _az1 = 'us-west-2b'
 _az2 = 'us-west-2c'
 _instance_type = 't2.micro'
+_key_name = 'sl-us-west-2'
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
@@ -126,7 +127,7 @@ public_server_1 = ec2.Instance(resource_name = 'new-public-ec2-1',
         availability_zone = _az1,
         subnet_id = public_subnet_1.id,
         associate_public_ip_address = False,
-        key_name = 'sl-us-west-2',
+        key_name = _key_name,
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
@@ -140,7 +141,7 @@ public_server_2 = ec2.Instance(resource_name = 'new-public-ec2-2',
         availability_zone = _az2,
         subnet_id = public_subnet_2.id,
         associate_public_ip_address = False,
-        key_name = 'sl-us-west-2',
+        key_name = _key_name,
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
@@ -237,7 +238,7 @@ private_server_1 = ec2.Instance(resource_name = 'new-private-ec2-1',
         availability_zone = _az1,
         subnet_id = private_subnet_1.id,
         associate_public_ip_address = False,
-        key_name = 'sl-us-west-2',
+        key_name = _key_name,
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
@@ -251,7 +252,7 @@ private_server_2 = ec2.Instance(resource_name = 'new-private-ec2-2',
         availability_zone = _az2,
         subnet_id = private_subnet_2.id,
         associate_public_ip_address = False,
-        key_name = 'sl-us-west-2',
+        key_name = _key_name,
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
