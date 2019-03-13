@@ -259,6 +259,34 @@ private_server_2 = ec2.Instance(resource_name = 'new-private-ec2-2',
         tags = {'Name': 'infra private ec2 2 (front-back-multi-az)', 'Creator': 'timc'}
         )
 
+launch_config = ec2.LaunchConfiguration(resource_name = 'new-launch-configuration',
+        image_id = _ami,                # TypeError if not present
+        instance_type = _instance_type, # TypeError if not present
+        associate_public_ip_address = True, # temporary
+        key_name = _key_name,
+        security_groups = [public_sg.id],
+
+        #   enable_monitoring=None,
+        #   iam_instance_profile=None,
+        #   name=None,
+        #   user_data=None,
+        )
+
+launch_template = ec2.LaunchTemplate(resource_name = 'new-launch-template',
+        image_id = _ami,                # TypeError if not present
+        instance_type = _instance_type, # TypeError if not present
+        key_name = _key_name,
+        vpc_security_group_ids = [public_sg.id],
+
+        #   security_group_names=None,
+        #   iam_instance_profile=None,
+        #   monitoring=None,
+        #   tag_specifications=None,
+        #   tags=None,
+        #   user_data=None,
+        #   vpc_security_group_ids=None,
+        )
+
 # stack exports: shared
 pulumi.export('vpcID', vpc.id)
 pulumi.export('internetGatewayID', igw.id)
@@ -268,6 +296,8 @@ pulumi.export('elasticIP 2', eip_2.public_ip)
 pulumi.export('[public] AMI', _ami)
 pulumi.export('[public ] nat gw ID', nat_gw.id)
 pulumi.export('[public] nat eip public IP', nat_eip.public_ip)
+pulumi.export('launch config', launch_config),
+pulumi.export('launch template', launch_template),
 
 # stack exports: public
 pulumi.export('[public] securityGroupID', public_sg.id)
