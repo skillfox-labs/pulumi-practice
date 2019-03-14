@@ -1,7 +1,7 @@
 import configparser
 import pulumi
 
-from pulumi_aws import autoscaling, ec2, s3
+from pulumi_aws import autoscaling, ec2, elasticloadbalancingv2, s3
 
 # TODO figure out how to use the 'get_*' Pulumi methods, e.g.,
 #   pulumi_aws.elasticloadbalancingv2.get_load_balancer()
@@ -142,6 +142,12 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
 
 # TODO how to allow access to private instance without copying SSH key to this
 # machine? Looks like I need `SSH agent forwarding`.
+
+public_alb = elasticloadbalancingv2.LoadBalancer(resource_name = 'new-alb',
+        internal = False,
+        load_balancer_type = 'application',
+        subnets = [public_subnet_1, public_subnet_2],
+        )
 
 public_server_1 = ec2.Instance(resource_name = 'new-public-ec2-1',
         ami = _ami,                     # TypeError if not present
@@ -361,6 +367,7 @@ pulumi.export('public-ec2-1-instance-id', public_server_1.id)
 pulumi.export('public-ec2-1-public-ip', public_server_1.public_ip)
 pulumi.export('public-ec2-2-instance-id', public_server_2.id)
 pulumi.export('public-ec2-2-private-ip', public_server_2.private_ip)
+pulumi.export('public-alb', public_alb.id)
 
 # stack exports: private
 pulumi.export('private-security-group-id', private_sg.id)
