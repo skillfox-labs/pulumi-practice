@@ -5,6 +5,7 @@ Each subdirectory is intended to hold a single self-contained Pulumi project. It
 ## The last project
 
 * Get the last project to a good stopping point before moving on
+    * [optional, prerequisite] `pulumi up` a __clean stack__, meaning there are no uncommitted files in the repo. If you look at the `Pulumi` web console, it should _not_ say "Uncommitted changes were present at the time of this update" on the right side of the screen next to the most recent commit.
     * `pulumi destroy` the current stack if needed
     * commit any added files
         * !! be sure the stack still builds
