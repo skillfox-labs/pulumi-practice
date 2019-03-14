@@ -34,23 +34,23 @@ _key_name = config['default']['key_name']
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
-        tags = {'Name': 'infra vpc (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra vpc (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 igw = ec2.InternetGateway(resource_name = 'new-igw',
         vpc_id = vpc.id,
-        tags = {'Name': 'infra internet gateway (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra internet gateway (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 public_subnet_1 = ec2.Subnet(resource_name = 'new-public-subnet-1',
         vpc_id = vpc.id,
         cidr_block = '10.0.0.0/24',
         availability_zone = _az1,
-        tags = {'Name': 'infra public subnet (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public subnet (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
         vpc_id = vpc.id,
         cidr_block = '10.0.1.0/24',
         availability_zone = _az2,
-        tags = {'Name': 'infra public subnet (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public subnet (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 # https://pulumi.io/reference/pkg/nodejs/@pulumi/aws/ec2/#RouteTableArgs-routes
 # FIXED! s/destination_cidr_block/cidr_block/g
@@ -64,7 +64,7 @@ public_subnet_2 = ec2.Subnet(resource_name = 'new-public-subnet-2',
 
 public_subnet_rt = ec2.RouteTable(resource_name = 'new-public-subnet-rt',
         vpc_id = vpc.id,
-        tags = {'Name': 'infra public route table (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public route table (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 # AWS: source-based routing. To get closer to a specific destination CIDR,
 # forward traffic to corresponding target, e.g.,
@@ -88,13 +88,13 @@ private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet-1',
         vpc_id = vpc.id,
         cidr_block = '10.0.2.0/24',
         availability_zone = _az1,
-        tags = {'Name': 'infra private subnet (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private subnet (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 private_subnet_2 = ec2.Subnet(resource_name = 'new-private-subnet-2',
         vpc_id = vpc.id,
         cidr_block = '10.0.3.0/24',
         availability_zone = _az2,
-        tags = {'Name': 'infra private subnet (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private subnet (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ? s/public_sg/dmz_sg/g ?
 
@@ -115,7 +115,7 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
         egress = [
             {'protocol': '-1', 'fromPort': 0, 'toPort': 0, 'cidrBlocks': ['0.0.0.0/0']}
             ],
-        tags = {'Name': 'infra public security group (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra public security group (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 # TODO add ebs_block_devices
 # TODO add volume_tags
@@ -136,7 +136,7 @@ public_server_1 = ec2.Instance(resource_name = 'new-public-ec2-1',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra public ec2 1 (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra public ec2 1 (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 public_server_2 = ec2.Instance(resource_name = 'new-public-ec2-2',
@@ -150,7 +150,7 @@ public_server_2 = ec2.Instance(resource_name = 'new-public-ec2-2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra public ec2 2 (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra public ec2 2 (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 # TODO bug? If you include `associate_with_private_ip = server.private_ip` but
@@ -161,7 +161,7 @@ eip_1 = ec2.Eip(resource_name = 'new-eip-1',
         instance = public_server_1.id,
         associate_with_private_ip = public_server_1.private_ip,
         vpc = True,
-        tags = {'Name': 'infra eip 1 (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra eip 1 (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 # TODO move this to ALB when the time comes
@@ -169,7 +169,7 @@ eip_2 = ec2.Eip(resource_name = 'new-eip-2',
         instance = public_server_2.id,
         associate_with_private_ip = public_server_2.private_ip,
         vpc = True,
-        tags = {'Name': 'infra eip 2 (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra eip 2 (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 # AWS: Maybe I should drop the route definition above, and use a
@@ -178,18 +178,18 @@ eip_2 = ec2.Eip(resource_name = 'new-eip-2',
 # TODO this needs to go out via NAT gateway
 private_subnet_rt = ec2.RouteTable(resource_name = 'new-private-subnet-rt',
         vpc_id = vpc.id,
-        tags = {'Name': 'infra private route table (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private route table (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 nat_eip = ec2.Eip(resource_name = 'new-nat-eip',
         # not using `associate_with_private_ip` because I don't have access to the private IP
         vpc = True,
-        tags = {'Name': 'infra nat eip (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra nat eip (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 nat_gw = ec2.NatGateway(resource_name = 'new-nat-gw',
         allocation_id = nat_eip.id,
         subnet_id = public_subnet_1.id,
-        tags = {'Name': 'infra nat gw (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra nat gw (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 private_subnet_rta_1 = ec2.RouteTableAssociation(resource_name = 'new-private-subnet-rta-1',
@@ -209,7 +209,7 @@ private_route = ec2.Route(resource_name = 'new-natgw-route',
 # TODO I don't see this tag
 # TODO add VPC endpoint
 bucket = s3.Bucket(resource_name = 'new-bucket',
-        tags = {'Name': 'infra bucket front-back-autoscaling', 'Creator': 'timc'})
+        tags = {'Name': 'infra bucket two-subnets-with-load-balancers', 'Creator': 'timc'})
 
 # s/public_sg/bastion_sg/g ?
 private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
@@ -218,7 +218,7 @@ private_sg = ec2.SecurityGroup(resource_name = 'new-private-sg',
         egress = [
             {'protocol': '-1', 'fromPort': 0, 'toPort': 0, 'cidrBlocks': ['0.0.0.0/0']}
             ],
-        tags = {'Name': 'infra private security group (front-back-autoscaling)', 'Creator': 'timc'})
+        tags = {'Name': 'infra private security group (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 # use an ec2.SecurityGroupRule instead of subnet
 private_sg_in_rule_1 = ec2.SecurityGroupRule(resource_name = 'new-private-sg-in-rule-1',
@@ -247,7 +247,7 @@ private_server_1 = ec2.Instance(resource_name = 'new-private-ec2-1',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra private ec2 1 (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra private ec2 1 (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 private_server_2 = ec2.Instance(resource_name = 'new-private-ec2-2',
@@ -261,7 +261,7 @@ private_server_2 = ec2.Instance(resource_name = 'new-private-ec2-2',
 
         # TODO `Quiver`: `Pulumi > Questions > Adding tags forces EC2 replacement?`
         #   edit: I also changed the instance's `resource_name`
-        tags = {'Name': 'infra private ec2 2 (front-back-autoscaling)', 'Creator': 'timc'}
+        tags = {'Name': 'infra private ec2 2 (two-subnets-with-load-balancers)', 'Creator': 'timc'}
         )
 
 launch_config = ec2.LaunchConfiguration(resource_name = 'new-launch-configuration',
@@ -286,7 +286,7 @@ autoscaling_group_1 = autoscaling.Group(resource_name = 'new-autoscaling-group-1
         vpc_zone_identifiers = [public_subnet_1, public_subnet_2],
         tags = [{
             'key': 'Name',
-            'value': 'infra autoscaling group 1 (front-back-autoscaling)',
+            'value': 'infra autoscaling group 1 (two-subnets-with-load-balancers)',
             'propagate_at_launch': True,
             }],
         )
@@ -299,7 +299,7 @@ launch_template = ec2.LaunchTemplate('new-launch-template',
         key_name = _key_name,
         vpc_security_group_ids = [public_sg.id],
         tags = [{
-            'Name': 'infra launch template (front-back-autoscaling)',
+            'Name': 'infra launch template (two-subnets-with-load-balancers)',
             'Creator': 'timc',
             }],
         )
@@ -314,7 +314,7 @@ launch_template = ec2.LaunchTemplate('new-launch-template',
 #        vpc_zone_identifiers = [public_subnet_1, public_subnet_2],
 #        tags = [{
 #            'key': 'Name',
-#            'value': 'infra autoscaling group 2 (front-back-autoscaling)',
+#            'value': 'infra autoscaling group 2 (two-subnets-with-load-balancers)',
 #            'propagate_at_launch': True,
 #            }]
 #        )
