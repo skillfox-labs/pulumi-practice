@@ -1,3 +1,4 @@
+import configparser
 import pulumi
 
 from pulumi_aws import autoscaling, ec2, s3
@@ -21,13 +22,15 @@ from pulumi_aws import autoscaling, ec2, s3
 
 # TODO find or create an AMI chooser, given a region and instance type
 
-# TODO create a config file
+config = configparser.ConfigParser()
+config.read('config.ini')
+#print(f"from config: {config['default']['instance_type']}")
 
-_ami = 'ami-032509850cf9ee54e'
-_az1 = 'us-west-2b'
-_az2 = 'us-west-2c'
-_instance_type = 't2.micro'
-_key_name = 'sl-us-west-2'
+_ami = config['default']['ami']
+_az1 = config['default']['az1']
+_az2 = config['default']['az2']
+_instance_type = config['default']['instance_type']
+_key_name = config['default']['key_name']
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
