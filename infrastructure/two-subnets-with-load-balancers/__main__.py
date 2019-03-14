@@ -3,6 +3,10 @@ import pulumi
 
 from pulumi_aws import autoscaling, ec2, s3
 
+# TODO figure out how to use the 'get_*' Pulumi methods, e.g.,
+#   pulumi_aws.elasticloadbalancingv2.get_load_balancer()
+# Could this help with the launch_template issue below?
+
 # TODO investigate and probably use `black`
 
 # TODO bug? See ~/z/src/github.com/tcondit/idea-foundry/bug-and-doc-fixes/01-pulumi-update-ec2-az.md
@@ -19,6 +23,16 @@ from pulumi_aws import autoscaling, ec2, s3
 # TODO investigate creating modules with functions or classes, and split things
 # by type (gateways, subnets, routes+route tables, etc.). Not sure it would
 # work, but there's got to be a way to break this up.
+#
+# import infra_network
+# >> infra_network.py
+#
+#from pulumi_aws import ec2
+#
+#def vpc():
+#    return ec2.Vpc(resource_name = 'new-vpc',
+#        cidr_block = '10.0.0.0/16',
+#        tags = {'Name': 'infra vpc (two-subnets-with-load-balancers)', 'Creator': 'timc'})
 
 # TODO find or create an AMI chooser, given a region and instance type
 
@@ -31,6 +45,8 @@ _az1 = config['default']['az1']
 _az2 = config['default']['az2']
 _instance_type = config['default']['instance_type']
 _key_name = config['default']['key_name']
+
+#vpc = infra_network.vpc()
 
 vpc = ec2.Vpc(resource_name = 'new-vpc',
         cidr_block = '10.0.0.0/16',
@@ -89,6 +105,8 @@ private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet-1',
         cidr_block = '10.0.2.0/24',
         availability_zone = _az1,
         tags = {'Name': 'infra private subnet (two-subnets-with-load-balancers)', 'Creator': 'timc'})
+
+#private_subnet_2 = infra_network.private_subnet_2()
 
 private_subnet_2 = ec2.Subnet(resource_name = 'new-private-subnet-2',
         vpc_id = vpc.id,
