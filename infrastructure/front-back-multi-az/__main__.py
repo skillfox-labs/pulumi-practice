@@ -74,9 +74,13 @@ public_route = ec2.Route(resource_name = 'new-public-route',
         gateway_id = igw.id,
         route_table_id = public_subnet_rt.id)
 
-public_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-public-subnet-rta',
+public_subnet_rta_1 = ec2.RouteTableAssociation(resource_name = 'new-public-subnet-rta-1',
         route_table_id = public_subnet_rt.id,
         subnet_id = public_subnet_1.id)
+
+public_subnet_rta_2 = ec2.RouteTableAssociation(resource_name = 'new-public-subnet-rta-2',
+        route_table_id = public_subnet_rt.id,
+        subnet_id = public_subnet_2.id)
 
 private_subnet_1 = ec2.Subnet(resource_name = 'new-private-subnet-1',
         vpc_id = vpc.id,
