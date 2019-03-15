@@ -143,10 +143,16 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
 # TODO how to allow access to private instance without copying SSH key to this
 # machine? Looks like I need `SSH agent forwarding`.
 
-public_alb = elasticloadbalancingv2.LoadBalancer(resource_name = 'new-alb',
+public_alb = elasticloadbalancingv2.LoadBalancer(resource_name = 'new-public-alb',
         internal = False,
         load_balancer_type = 'application',
         subnets = [public_subnet_1, public_subnet_2],
+        )
+
+private_alb = elasticloadbalancingv2.LoadBalancer(resource_name = 'new-private-alb',
+        internal = False,
+        load_balancer_type = 'application',
+        subnets = [private_subnet_1, private_subnet_2],
         )
 
 public_server_1 = ec2.Instance(resource_name = 'new-public-ec2-1',
@@ -380,4 +386,5 @@ pulumi.export('private-ec2-1-instance-id', private_server_1.id)
 pulumi.export('private-ec2-1-public-ip', private_server_1.public_ip)
 pulumi.export('private-ec2-2-instance-id', private_server_2.id)
 pulumi.export('private-ec2-2-private-ip', private_server_2.private_ip)
+pulumi.export('private-alb', private_alb.id)
 
