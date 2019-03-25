@@ -96,6 +96,7 @@ public_route = ec2.Route(resource_name = 'new-public-route',
         gateway_id = igw.id,
         route_table_id = public_subnet_rt.id)
 
+# TODO public_subnet_rta_1 (& add public_subnet_rta_2)
 public_subnet_rta = ec2.RouteTableAssociation(resource_name = 'new-public-subnet-rta',
         route_table_id = public_subnet_rt.id,
         subnet_id = public_subnet_1.id)
@@ -139,6 +140,7 @@ public_sg = ec2.SecurityGroup(resource_name = 'new-public-sg',
 # TODO add volume_tags
 # TODO add iam_instance_profile
 # TODO add user_data
+# TODO add encryption at rest
 
 # TODO how to allow access to private instance without copying SSH key to this
 # machine? Looks like I need `SSH agent forwarding`.
@@ -353,14 +355,15 @@ launch_template = ec2.LaunchTemplate('new-launch-template',
 pulumi.export('vpc-id', vpc.id)
 pulumi.export('internet-gateway-id', igw.id)
 pulumi.export('bucket-name', bucket.bucket_domain_name)
-pulumi.export('elastic-ip-1', eip_1.public_ip)
-pulumi.export('elastic-ip-2', eip_2.public_ip)
+pulumi.export('elastic-ip-1-public-ip', eip_1.public_ip)
+pulumi.export('elastic-ip-2-public-ip', eip_2.public_ip)
 pulumi.export('ami-id', _ami)
 pulumi.export('nat-gw-id', nat_gw.id)
 pulumi.export('nat-eip-public-ip', nat_eip.public_ip)
-pulumi.export('launch-config', launch_config),
-pulumi.export('launch-template', launch_template.id),
-#pulumi.export('autoscaling-group-2', autoscaling_group_2.id),
+pulumi.export('launch-config-id', launch_config),
+pulumi.export('launch-template-id', launch_template.id),
+pulumi.export('autoscaling-group-1-id', autoscaling_group_1.id),
+#pulumi.export('autoscaling-group-2-id', autoscaling_group_2.id),
 
 # stack exports: public
 pulumi.export('public-security-group-id', public_sg.id)
@@ -369,22 +372,26 @@ pulumi.export('public-subnet-2-id', public_subnet_2.id)
 pulumi.export('public-subnet-1-cidr-block', public_subnet_1.cidr_block)
 pulumi.export('public-route-table-id', public_subnet_rt.id)
 pulumi.export('public-route-id', public_route.id)
+pulumi.export('public-route-table-association-id', public_subnet_rta.id)
 pulumi.export('public-ec2-1-instance-id', public_server_1.id)
 pulumi.export('public-ec2-1-public-ip', public_server_1.public_ip)
 pulumi.export('public-ec2-2-instance-id', public_server_2.id)
 pulumi.export('public-ec2-2-private-ip', public_server_2.private_ip)
-pulumi.export('public-alb', public_alb.id)
+pulumi.export('public-alb-arn', public_alb.id)
 
 # stack exports: private
 pulumi.export('private-security-group-id', private_sg.id)
+pulumi.export('private-security-group-inbound-rule-1-id', private_sg_in_rule_1.id)
 pulumi.export('private-subnet-1-id', private_subnet_1.id)
 pulumi.export('private-subnet-2-id', private_subnet_2.id)
 pulumi.export('private-subnet-1-cidr-block', private_subnet_1.cidr_block)
 pulumi.export('private-route-table-id', private_subnet_rt.id)
 pulumi.export('private-route-id', private_route.id)
+pulumi.export('private-route-table-association-id', private_subnet_rta_1.id)
+pulumi.export('private-route-table-association-id', private_subnet_rta_2.id)
 pulumi.export('private-ec2-1-instance-id', private_server_1.id)
 pulumi.export('private-ec2-1-public-ip', private_server_1.public_ip)
 pulumi.export('private-ec2-2-instance-id', private_server_2.id)
 pulumi.export('private-ec2-2-private-ip', private_server_2.private_ip)
-pulumi.export('private-alb', private_alb.id)
+pulumi.export('private-alb-arn', private_alb.id)
 
